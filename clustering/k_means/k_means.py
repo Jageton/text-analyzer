@@ -29,7 +29,7 @@ class KMeans:
         self.copy_x = copy_x
         self.algorithm = algorithm
 
-    def k_means_plusplus(self, X):
+    def run(self, X):
         # Fit K-means with Scikit
         k_means = sk_cluster.KMeans(init=self.init, n_clusters=self.n_clusters, n_init=self.n_init,
                                     max_iter=self.max_iter, tol=self.tol, verbose=self.verbose,
@@ -38,5 +38,4 @@ class KMeans:
 
         # Predict the cluster for all the samples
         predict = k_means.predict(X)
-
         return predict
