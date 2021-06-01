@@ -39,7 +39,8 @@ class KNN:
         self.n_jobs = n_jobs
 
     def run(self, train_x, train_y, test_x):
-        classifier = neighbors.KNeighborsClassifier(n_neighbors=self.n_neighbors, weights=self.weights, algorithm=self.algorithm,
+        classifier = neighbors.KNeighborsClassifier(n_neighbors=self.n_neighbors, weights=self.weights,
+                                                    algorithm=self.algorithm,
                                                     leaf_size=self.leaf_size, p=self.p, metric=self.metric,
                                                     metric_params=self.metric_params, n_jobs=self.n_jobs)
         classifier.fit(X=train_x, y=train_y)
