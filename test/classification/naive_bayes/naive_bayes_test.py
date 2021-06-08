@@ -1,9 +1,11 @@
-from classification.naive_bayes.naive_bayes import NaiveBayes
 import unittest
+
+import numpy as np
 from pandas.core.frame import DataFrame
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
-import numpy as np
+
+from classification.naive_bayes.naive_bayes import NaiveBayes
 
 
 class NaiveBayesTest(unittest.TestCase):
@@ -16,8 +18,7 @@ class NaiveBayesTest(unittest.TestCase):
 
         x = iris_frame.drop(columns=['target'])
         y = iris_frame['target'].values
-        x_train, x_test, y_train, y_test = train_test_split(
-            x, y, test_size=0.10, random_state=1)
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.10, random_state=1)
         predict = NaiveBayes().run(x_train, y_train, x_test)
         print(y_test)
         print(predict)

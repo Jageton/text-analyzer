@@ -10,4 +10,3 @@ class NaiveBayes:
         model = GaussianNB(priors=self.priors, var_smoothing=self.var_smoothing)
         model.fit(X=x_train, y=y_train)
         return model.predict(X=x_test)
-

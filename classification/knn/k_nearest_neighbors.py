@@ -1,10 +1,6 @@
-from types import FunctionType
-
-from pandas.core.frame import DataFrame
-
-from sklearn import neighbors, datasets
-from sklearn.model_selection import train_test_split
 from enum import Enum
+
+from sklearn import neighbors
 
 
 class KNNAlgorithmType(Enum):

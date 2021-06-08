@@ -1,4 +1,5 @@
 from enum import Enum
+
 from sklearn.tree import DecisionTreeClassifier
 
 
@@ -45,5 +46,4 @@ class DecisionTree:
                                      max_leaf_nodes=self.max_leaf_nodes,
                                      min_impurity_decrease=self.min_impurity_decrease, class_weight=self.class_weight,
                                      ccp_alpha=self.ccp_alpha)
-
         return clf.fit(train_x, train_y).predict(test_x)
