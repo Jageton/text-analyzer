@@ -30,12 +30,8 @@ class KMeans:
         self.algorithm = algorithm
 
     def run(self, X):
-        # Fit K-means with Scikit
         k_means = sk_cluster.KMeans(init=self.init, n_clusters=self.n_clusters, n_init=self.n_init,
                                     max_iter=self.max_iter, tol=self.tol, verbose=self.verbose,
                                     random_state=self.random_state, copy_x=self.copy_x, algorithm=self.algorithm)
-        k_means.fit(X)
-
-        # Predict the cluster for all the samples
-        predict = k_means.predict(X)
+        predict = k_means.fit(X).predict(X)
         return predict
