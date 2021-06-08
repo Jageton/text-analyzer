@@ -72,8 +72,6 @@ class DBSCANTest(unittest.TestCase):
         iris_frame = DataFrame(iris.data)
         iris_frame.columns = iris.feature_names
         iris_frame['target'] = iris.target
-        iris_frame['name'] = iris_frame.target.apply(lambda x: iris.target_names[x])
-        iris_frame = iris_frame.drop(columns=["name"])
         result = DBSCAN(eps=1).run(iris_frame)
         target_list = list(iris_frame['target'])
 
