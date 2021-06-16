@@ -1,9 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from pandas import DataFrame
+from sklearn import datasets
 from sklearn.datasets import make_blobs
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import pylab
 
+from classification.decision_tree.decision_tree import DecisionTree
+from classification.knn.k_nearest_neighbors import KNN
+from classification.naive_bayes.naive_bayes import NaiveBayes
+from clustering.agglomerative.agglomerative import Aglomerative
 from clustering.birch.birch import Birch
 from clustering.dbscan.dbscan import DBSCAN
 from clustering.fcm.fcm_impl import FCMImpl, Point
@@ -135,3 +142,73 @@ def run_birch(params):
 
     plt.scatter(X[:, 0], X[:, 1], c=predict, cmap='rainbow', alpha=0.7, edgecolors='b')
     plt.show()
+
+
+def run_agglomerative(params):
+    nsamples = params['nsamples']
+    cluster_std = params['cluster_std']
+    print("////////////////////  AGGLOMERATIVE WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " ///////")
+    # Configuration options
+    cluster_centers = [(20, 20), (4, 4)]
+    num_classes = len(cluster_centers)
+
+    # Generate data
+    X, targets = make_blobs(n_samples=nsamples, centers=cluster_centers, n_features=num_classes,
+                            center_box=(0, 1), cluster_std=cluster_std)
+    predict = Aglomerative(n_cluster=num_classes).run(X)
+
+    # Generate scatter plot for training data
+    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    plt.title('Clusterization result')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.show()
+
+def run_decision_tree(params):
+    test_size = params['test_size']
+    random_state = params['random_state']
+    print("////////////////////  DECISION_TREE WITH test_size =", test_size, ", random_state=", random_state, " ///////")
+    iris = datasets.load_iris()
+    iris_frame = DataFrame(iris.data)
+    iris_frame.columns = iris.feature_names
+    iris_frame['target'] = iris.target
+
+    x = iris_frame.drop(columns=['target'])
+    y = iris_frame['target'].values
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
+    predict = DecisionTree().run(train_x=x_train, train_y=y_train, test_x=x_test)
+    print(y_test)
+    print(predict)
+
+def run_kneares_neighbors(params):
+    test_size = params['test_size']
+    random_state = params['random_state']
+    print("////////////////////  KNEAREST_NEIGHBORS WITH test_size =", test_size, ", random_state=", random_state, " ///////")
+    iris = datasets.load_iris()
+    iris_frame = DataFrame(iris.data)
+    iris_frame.columns = iris.feature_names
+    iris_frame['target'] = iris.target
+
+    x = iris_frame.drop(columns=['target'])
+    y = iris_frame['target'].values
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
+    predict = KNN(n_neighbors=5).run(x_train, y_train, x_test)
+    print(y_test)
+    print(predict)
+
+def run_naive_bayes(params):
+    test_size = params['test_size']
+    random_state = params['random_state']
+    print("////////////////////  NAIVE_BAYES WITH test_size =", test_size, ", random_state=", random_state, " ///////")
+    iris = datasets.load_iris()
+    iris_frame = DataFrame(iris.data)
+    iris_frame.columns = iris.feature_names
+    iris_frame['target'] = iris.target
+
+    x = iris_frame.drop(columns=['target'])
+    y = iris_frame['target'].values
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
+    predict = NaiveBayes().run(x_train, y_train, x_test)
+    print(y_test)
+    print(predict)

@@ -3,7 +3,7 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from tkinter import *
-from tkinter import scrolledtext, filedialog
+from tkinter import filedialog
 
 from os import getcwd
 
@@ -62,6 +62,16 @@ def main():
     threeshold.insert(0, 1.5)
     threeshold.place(x=220, y=295)
 
+    Label(window, text="Test size").place(x=330, y=230)
+    test_size_entry = Entry(window, width=10)
+    test_size_entry.insert(0, 0.25)
+    test_size_entry.place(x=330, y=250)
+
+    Label(window, text="Random state").place(x=330, y=275)
+    random_state_entry = Entry(window, width=10)
+    random_state_entry.insert(0, 1)
+    random_state_entry.place(x=330, y=295)
+
     log = Text(window)
     log.place(x=20, y=340)
     catch_std_out(log)
@@ -73,6 +83,8 @@ def main():
         params['eps'] = float(eps_entry.get())
         params['branching_factor'] = int(branching_factor_entry.get())
         params['threeshold'] = float(threeshold.get())
+        params['test_size'] = float(test_size_entry.get())
+        params['random_state'] = int(random_state_entry.get())
 
     def _start():
         try:
@@ -96,6 +108,17 @@ def main():
             threeshold.configure(state='normal')
             branching_factor_entry.configure(state='normal')
 
+        if alg.get() < 6:
+            test_size_entry.configure(state='disabled')
+            random_state_entry.configure(state='disabled')
+            nsamples_entry.configure(state='normal')
+            cluster_std_entry.configure(state='normal')
+        else:
+            test_size_entry.configure(state='normal')
+            random_state_entry.configure(state='normal')
+            nsamples_entry.configure(state='disabled')
+            cluster_std_entry.configure(state='disabled')
+
     alg.trace_add("write", _update_ui)
     alg.set(0)
 
@@ -107,14 +130,16 @@ def main():
     Radiobutton(window, text="Spectral clustering", variable=alg, value=2).place(x=clust_x, y=100)
     Radiobutton(window, text="Fcm", variable=alg, value=3).place(x=clust_x, y=130)
     Radiobutton(window, text="Birch", variable=alg, value=4).place(x=clust_x, y=160)
+    Radiobutton(window, text="Agglomerative", variable=alg, value=5).place(x=clust_x, y=190)
 
     class_x = 570
     Label(window, text="Классификация").place(x=class_x, y=10)
 
-    Radiobutton(window, text="K nearest neighbors", variable=alg, value=5).place(x=class_x, y=40)
-    Radiobutton(window, text="Naive bayes", variable=alg, value=6).place(x=class_x, y=70)
+    Radiobutton(window, text="K nearest neighbors", variable=alg, value=6).place(x=class_x, y=40)
+    Radiobutton(window, text="Naive bayes", variable=alg, value=7).place(x=class_x, y=70)
+    Radiobutton(window, text="Decision Tree", variable=alg, value=8).place(x=class_x, y=100)
 
-    Button(window, text="Начать", command=lambda: _start()).place(x=520, y=190)
+    Button(window, text="Начать", command=lambda: _start()).place(x=520, y=230)
 
     window.mainloop()
 
@@ -135,6 +160,14 @@ def start():
         run_fcm(params)
     elif id == 4:
         run_birch(params)
+    elif id == 5:
+        run_agglomerative(params)
+    elif id == 6:
+        run_kneares_neighbors(params)
+    elif id == 7:
+        run_naive_bayes(params)
+    elif id == 8:
+        run_decision_tree(params)
 
 
 def add_file_button_clicked(listbox: Listbox):
