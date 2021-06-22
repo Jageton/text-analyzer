@@ -20,11 +20,11 @@ from clustering.spectral_clustering.spectral_clustering import SpectralCluster
 
 def run_db_scan(params):
     nsamples = params['nsamples']
-    cluster_std = params['cluster_std']
+    # cluster_std = params['cluster_std']
     eps = params['eps']
-    print("////////////////////  DB_SCAN WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " ///////")
+    # print("////////////////////  DB_SCAN WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " ///////")
     centers = [[1, 1], [-5, -5], [5, -5]]
-    X, labels_true = make_blobs(n_samples=nsamples, centers=centers, cluster_std=cluster_std, random_state=0)
+    X, labels_true = make_blobs(n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
     X = StandardScaler().fit_transform(X)
 
     predict = DBSCAN(eps=eps).run(X)
