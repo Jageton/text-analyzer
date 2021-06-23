@@ -45,6 +45,9 @@ def run_algorithm_for_3_columns(algorithm, dataframe):
 
     predict = algorithm()
     ax.scatter(dataframe.values[:, 0], dataframe.values[:, 1], dataframe.values[:, 2], c=_get_colors(predict))
+    ax.set_xlabel(dataframe.columns[0])
+    ax.set_ylabel(dataframe.columns[1])
+    ax.set_zlabel(dataframe.columns[2])
     plt.show()
 
 
