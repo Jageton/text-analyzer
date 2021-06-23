@@ -17,13 +17,35 @@ from clustering.fcm.fcm_impl import FCMImpl, Point
 from clustering.k_means.k_means import KMeans
 from clustering.spectral_clustering.spectral_clustering import SpectralCluster
 
-colors = ['#3b4cc0', '#b40426', '#fa017a']
+colors = ['#47a8f2', '#3b4cc0', '#b50525', '#000000']
+
+
+def get_color(x):
+    if 0 > x or x > 2:
+        return colors[3]
+    return colors[x]
+
+
+def _get_colors(predict):
+    return list(map(get_color, predict))
+
 
 def run_algorithm_for_2_columns(algorithm, dataframe):
     predict = algorithm()
-    columns = dataframe.columns[-1].replace(" ", "").split(',')
-    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
-    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    plt.scatter(dataframe.values[:, 0], dataframe.values[:, 1], c=_get_colors(predict), marker="o", picker=True)
+    plt.title('Clusterization result')
+    plt.xlabel(dataframe.columns[0])
+    plt.ylabel(dataframe.columns[1])
+    plt.show()
+
+
+def run_algorithm_for_3_columns(algorithm, dataframe):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    predict = algorithm()
+    ax.scatter(dataframe.values[:, 0], dataframe.values[:, 1], dataframe.values[:, 2], c=_get_colors(predict))
+    plt.show()
 
 
 def run_db_scan(nsamples, dataframe, eps, algorithm, metric, leaf_size, p):
@@ -42,30 +64,6 @@ def run_db_scan(nsamples, dataframe, eps, algorithm, metric, leaf_size, p):
     print(predict)
     dataframe.columns[-1].replace(" ", "").split(',')
 
-    import random
-    random.seed(1)
-    # Create 3 samples from normal distribution with mean and standard deviation of 1
-    x = [random.normalvariate(1, 1) for _ in range(1000)]
-    y = [random.normalvariate(1, 1) for _ in range(1000)]
-    z = [random.normalvariate(1, 1) for _ in range(1000)]
-    # Set up Figure and Axes
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-    # Plot
-    def get_color(x):
-        if x == 2:
-            return '#47a8f2'
-        elif x == 0:
-            return '#3b4cc0'
-        elif x == 1:
-            return '#b50525'
-        else:
-            return '#000000'
-
-    colors = list(map(get_color, predict))
-    ax.scatter(x, y, z, c=colors)
-    plt.show()
     # # Plot result
     # core_samples_mask = np.zeros_like(predict, dtype=bool)
     # core_samples_mask[range(0, nsamples)] = True

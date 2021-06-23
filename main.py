@@ -121,36 +121,84 @@ def db_scan_tab(frame):
         power = 2
         if p.get() != "2":
             power = None
-        run_db_scan(nsamples=int(nsamples.get()), dataframe=None, eps=float(eps.get()), metric=metric.get(), algorithm=algorithm.get(),
+        run_db_scan(nsamples=int(nsamples.get()), dataframe=None, eps=float(eps.get()), metric=metric.get(),
+                    algorithm=algorithm.get(),
                     leaf_size=int(leaf_size.get()),
                     p=power)
 
     def _start_with_file():
-        # try:
-        path = listbox.get(ACTIVE)
-        if path != "":
-            dataframe = pandas.read_csv(path)
-            data = DataFrame(dataframe)
-            # dataframe = DataFrame(dataframe)
-            # iris = datasets.load_iris()
-            # iris_frame = DataFrame(dataframe)
-            # iris_frame.columns = iris.feature_names
-            # iris_frame['target'] = iris.target
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
 
-            power = 2
-            if p.get() != "2":
-                power = None
-            run_db_scan(nsamples=0, dataframe=dataframe, eps=float(eps.get()), metric=metric.get(),
-                        algorithm=algorithm.get(),
-                        leaf_size=int(leaf_size.get()),
-                        p=power)
-        else:
-            messagebox.showerror(message='Не был выбран файл или URL')
-        # except Exception as e:
-        #     messagebox.showerror(message="Error: ")
+                power = 2
+                if p.get() != "2":
+                    power = None
+
+                def _start(df):
+                    return lambda: DBSCAN(eps=float(eps.get()), metric=metric.get(),
+                                          algorithm=algorithm.get(),
+                                          leaf_size=int(leaf_size.get()),
+                                          p=power).run(df)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(message="Произошла ошибочка. Посмотрите в лог.")
 
     Button(frame, text="Запустить с nsamples", command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле", command=_start_with_file).place(x=200, y=340)
+
+
+def run_algorithm(frame, dataframe, algorithm):
+    new_window = Toplevel(frame)
+    new_window.columnconfigure(0, pad=10)
+    new_window.columnconfigure(1, pad=10)
+    new_window.columnconfigure(2, pad=10)
+    new_window.rowconfigure(0, pad=10)
+    new_window.rowconfigure(1, pad=10)
+    new_window.rowconfigure(2, pad=20)
+
+    del dataframe[dataframe.columns[-1]]
+
+    Label(new_window, text="Первый столбец*").grid(column=0, row=0)
+    combo_box1 = ttk.Combobox(new_window,
+                              values=[i for i in dataframe.columns], width=10)
+    combo_box1.grid(column=0, row=1)
+    combo_box1.current(0)
+
+    Label(new_window, text="Второй столбец*").grid(column=1, row=0)
+    combo_box2 = ttk.Combobox(new_window,
+                              values=[i for i in dataframe.columns], width=10)
+    combo_box2.grid(column=1, row=1)
+    combo_box2.current(1)
+
+    Label(new_window, text="Третий столбец").grid(column=2, row=0)
+    combo_box3 = ttk.Combobox(new_window,
+                              values=['None'] + [i for i in dataframe.columns], width=10)
+    combo_box3.insert(0, 'None')
+    combo_box3.grid(column=2, row=1)
+    combo_box3.current(0)
+
+    def _start():
+        df = dataframe.copy()
+        for name in df.columns:
+            if combo_box1.get() != name and combo_box2.get() != name and combo_box3.get() != name:
+                del df[name]
+
+        alg = algorithm(df)
+        if len(df.columns) == 2:
+            run_algorithm_for_2_columns(alg, df)
+        else:
+            run_algorithm_for_3_columns(alg, df)
+
+    Button(new_window, text='Запустить', command=_start).grid(column=1, row=2)
 
 
 def add_input(x, y, frame, text, value):
