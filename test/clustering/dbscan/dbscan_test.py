@@ -6,6 +6,7 @@ from pandas import DataFrame
 from sklearn import datasets
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import Bunch
 
 from clustering.dbscan.dbscan import DBSCAN
 
@@ -69,6 +70,7 @@ class DBSCANTest(unittest.TestCase):
 
     def test_iris(self):
         iris = datasets.load_iris()
+        Bunch.fromkeys()
         iris_frame = DataFrame(iris.data)
         iris_frame.columns = iris.feature_names
         iris_frame['target'] = iris.target

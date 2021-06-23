@@ -17,41 +17,78 @@ from clustering.fcm.fcm_impl import FCMImpl, Point
 from clustering.k_means.k_means import KMeans
 from clustering.spectral_clustering.spectral_clustering import SpectralCluster
 
+colors = ['#3b4cc0', '#b40426', '#fa017a']
 
-def run_db_scan(params):
-    nsamples = params['nsamples']
+def run_algorithm_for_2_columns(algorithm, dataframe):
+    predict = algorithm()
+    columns = dataframe.columns[-1].replace(" ", "").split(',')
+    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+
+
+def run_db_scan(nsamples, dataframe, eps, algorithm, metric, leaf_size, p):
     # cluster_std = params['cluster_std']
-    eps = params['eps']
     # print("////////////////////  DB_SCAN WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " ///////")
-    centers = [[1, 1], [-5, -5], [5, -5]]
-    X, labels_true = make_blobs(n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
-    X = StandardScaler().fit_transform(X)
+    predict = None
+    print(dataframe, nsamples)
+    if dataframe is None:
+        centers = [[1, 1], [-5, -5], [5, -5]]
+        X, labels_true = make_blobs(n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
+        X = StandardScaler().fit_transform(X)
+        predict = DBSCAN(eps=eps, metric=metric, algorithm=algorithm, p=p, leaf_size=leaf_size).run(X)
+    else:
+        predict = DBSCAN(eps=eps, metric=metric, algorithm=algorithm, p=p, leaf_size=leaf_size).run(dataframe)
+        # X = dataframe
+    print(predict)
+    dataframe.columns[-1].replace(" ", "").split(',')
 
-    predict = DBSCAN(eps=eps).run(X)
+    import random
+    random.seed(1)
+    # Create 3 samples from normal distribution with mean and standard deviation of 1
+    x = [random.normalvariate(1, 1) for _ in range(1000)]
+    y = [random.normalvariate(1, 1) for _ in range(1000)]
+    z = [random.normalvariate(1, 1) for _ in range(1000)]
+    # Set up Figure and Axes
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
 
-    # Plot result
-    core_samples_mask = np.zeros_like(predict, dtype=bool)
-    core_samples_mask[range(0, nsamples)] = True
+    # Plot
+    def get_color(x):
+        if x == 2:
+            return '#47a8f2'
+        elif x == 0:
+            return '#3b4cc0'
+        elif x == 1:
+            return '#b50525'
+        else:
+            return '#000000'
 
-    # Black removed and is used for noise instead.
-    unique_labels = set(predict)
-    colors = [plt.cm.Spectral(each)
-              for each in np.linspace(0, 1, len(unique_labels))]
-    for k, col in zip(unique_labels, colors):
-        if k == -1:
-            # Black used for noise.
-            col = [0, 0, 0, 1]
-
-        class_member_mask = (predict == k)
-
-        xy = X[class_member_mask & core_samples_mask]
-        plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=14)
-
-        xy = X[class_member_mask & ~core_samples_mask]
-        plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=6)
-
-    plt.title('Estimated number of clusters: %d' % 3)
+    colors = list(map(get_color, predict))
+    ax.scatter(x, y, z, c=colors)
     plt.show()
+    # # Plot result
+    # core_samples_mask = np.zeros_like(predict, dtype=bool)
+    # core_samples_mask[range(0, nsamples)] = True
+    #
+    # # Black removed and is used for noise instead.
+    # unique_labels = set(predict)
+    # colors = [plt.cm.Spectral(each)
+    #           for each in np.linspace(0, 1, len(unique_labels))]
+    # for k, col in zip(unique_labels, colors):
+    #     if k == -1:
+    #         # Black used for noise.
+    #         col = [0, 0, 0, 1]
+    #
+    #     class_member_mask = (predict == k)
+    #
+    #     xy = X[class_member_mask & core_samples_mask]
+    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=14)
+    #
+    #     xy = X[class_member_mask & ~core_samples_mask]
+    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=6)
+    #
+    # plt.title('Estimated number of clusters: %d' % 3)
+    # plt.show()
 
 
 def run_kmeans(params):
@@ -165,10 +202,12 @@ def run_agglomerative(params):
     plt.ylabel('Y')
     plt.show()
 
+
 def run_decision_tree(params):
     test_size = params['test_size']
     random_state = params['random_state']
-    print("////////////////////  DECISION_TREE WITH test_size =", test_size, ", random_state=", random_state, " ///////")
+    print("////////////////////  DECISION_TREE WITH test_size =", test_size, ", random_state=", random_state,
+          " ///////")
     iris = datasets.load_iris()
     iris_frame = DataFrame(iris.data)
     iris_frame.columns = iris.feature_names
@@ -181,10 +220,12 @@ def run_decision_tree(params):
     print(y_test)
     print(predict)
 
+
 def run_kneares_neighbors(params):
     test_size = params['test_size']
     random_state = params['random_state']
-    print("////////////////////  KNEAREST_NEIGHBORS WITH test_size =", test_size, ", random_state=", random_state, " ///////")
+    print("////////////////////  KNEAREST_NEIGHBORS WITH test_size =", test_size, ", random_state=", random_state,
+          " ///////")
     iris = datasets.load_iris()
     iris_frame = DataFrame(iris.data)
     iris_frame.columns = iris.feature_names
@@ -196,6 +237,7 @@ def run_kneares_neighbors(params):
     predict = KNN(n_neighbors=5).run(x_train, y_train, x_test)
     print(y_test)
     print(predict)
+
 
 def run_naive_bayes(params):
     test_size = params['test_size']
