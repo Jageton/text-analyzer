@@ -1,12 +1,15 @@
 # This is a sample Python script.
-
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from clustering.spectral_clustering.spectral_clustering import EigenSolver
+from classification.decision_tree.decision_tree import DecisionTreeCriterion, DecisionTreeSplitter
+from classification.knn.k_nearest_neighbors import KNNAlgorithmType, KNNWeightType
+from clustering.agglomerative.agglomerative import AffinityType, LinkageType
 import urllib.request
 from enum import Enum
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
-
+import sys
 from os import getcwd
 from tkinter.ttk import Notebook
 
@@ -28,14 +31,34 @@ def main():
 
     tab1 = ttk.Frame(tabControl)
     tab2 = ttk.Frame(tabControl)
+    tab3 = ttk.Frame(tabControl)
+    tab4 = ttk.Frame(tabControl)
+    tab5 = ttk.Frame(tabControl)
+    tab6 = ttk.Frame(tabControl)
+    tab7 = ttk.Frame(tabControl)
+    tab8 = ttk.Frame(tabControl)
+
     log_tab = ttk.Frame(tabControl)
 
     tabControl.add(tab1, text='DB SCAN')
     tabControl.add(tab2, text='Birch')
+    tabControl.add(tab3, text='Aglomerative')
+    tabControl.add(tab4, text='KNN')
+    tabControl.add(tab5, text='Naive Bayes')
+    tabControl.add(tab6, text='Decision Tree')
+    tabControl.add(tab7, text='Spectral clustering')
+    tabControl.add(tab8, text='M Means')
+
     tabControl.add(log_tab, text='Log')
     tabControl.place(x=0, y=300)
 
     db_scan_tab(tab1)
+    aglomerativeTab(tab3)
+    knnTab(tab4)
+    naive_bayesTab(tab5)
+    decision_treeTab(tab6)
+    spectralClusteringTab(tab7)
+    k_meansTab(tab8)
     fill_log_tab(log_tab)
 
     ttk.Label(tab2,
@@ -52,10 +75,12 @@ def main():
     listbox = Listbox(window, width=40, height=10)
     listbox.place(x=10, y=40)
 
-    add_file_button = Button(window, text="Добавить файл", command=lambda: add_file_button_clicked(listbox))
+    add_file_button = Button(window, text="Добавить файл",
+                             command=lambda: add_file_button_clicked(listbox))
     add_file_button.place(x=370, y=40)
 
-    delete_file_button = Button(window, text="Удалить", command=lambda: delete_file_button_clicked(listbox))
+    delete_file_button = Button(
+        window, text="Удалить", command=lambda: delete_file_button_clicked(listbox))
     delete_file_button.place(x=370, y=140)
 
     def _show_url_input():
@@ -77,18 +102,23 @@ def main():
                 conn.get_method = lambda: 'HEAD'
                 response = urllib.request.urlopen(conn)
                 if response.status == 200:
-                    messagebox.showinfo(title='Проверка подклчения', message='URL существует')
+                    messagebox.showinfo(
+                        title='Проверка подклчения', message='URL существует')
                 else:
-                    messagebox.showerror(title='Проверка подклчения', message='URL не существует')
+                    messagebox.showerror(
+                        title='Проверка подклчения', message='URL не существует')
             except ValueError:
-                messagebox.showerror(title='Проверка подклчения', message='URL не существует')
+                messagebox.showerror(
+                    title='Проверка подклчения', message='URL не существует')
             except Exception:
-                messagebox.showerror(title='Проверка подклчения', message='URL не существует')
+                messagebox.showerror(
+                    title='Проверка подклчения', message='URL не существует')
 
         Button(new_window, text="Проверить", command=_check).pack()
         Button(new_window, text="Добавить", command=_exit).pack()
 
-    Button(window, text="Добавить URL", command=_show_url_input).place(x=370, y=90)
+    Button(window, text="Добавить URL",
+           command=_show_url_input).place(x=370, y=90)
 
     window.mainloop()
 
@@ -150,10 +180,279 @@ def db_scan_tab(frame):
                 print(e.message)
             else:
                 print(e)
-            messagebox.showerror(message="Произошла ошибочка. Посмотрите в лог.")
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
 
-    Button(frame, text="Запустить с nsamples", command=_start_with_nsamples).place(x=10, y=340)
-    Button(frame, text="Запустить на файле", command=_start_with_file).place(x=200, y=340)
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+
+
+def aglomerativeTab(frame):
+    linkage = add_input(10, 30, frame, "linkage", LinkageType)
+    n_clusters = add_input(10, 80, frame, 'n_clusters', 2)
+    affinity = add_input(10, 130, frame, "affinity", AffinityType)
+    nsamples = add_input(10, 290, frame, "Nsamples", 10000)
+
+    def _start_with_nsamples():
+        run_agglomerative(nsamples=int(nsamples.get()),
+                          dataframe=None,
+                          affinity=affinity.get(),
+                          linkage=linkage.get(),
+                          n_clusters=int(n_clusters.get()))
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    return lambda: Aglomerative(n_cluster=int(n_clusters.get()),
+                                                linkage=linkage.get(),
+                                                affinity=affinity.get() if linkage.get() != 'ward'else AffinityType.euclidean.value
+                                                ).run(df)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+
+
+def spectralClusteringTab(frame):
+    n_clusters = add_input(10, 30, frame, 'n_clusters', 2)
+    eigen_solver = add_input(10, 80, frame, "eigen_solver", EigenSolver)
+    nsamples = add_input(10, 290, frame, "Nsamples", 10000)
+
+    def _start_with_nsamples():
+        run_spectral_clustering()
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    return lambda: SpectralCluster(n_clusters=int(n_clusters.get()),
+                                                   eigen_solver=eigen_solver.get()).run(df)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+
+
+
+def k_meansTab(frame):
+    n_clusters = add_input(10, 30, frame, 'n_clusters', 2)
+    init = add_input(10,80,frame,"init",KMeansInitType)
+    algorithm = add_input(10,140,"algorithm",KMeansAlgorithmType)
+    n_init = add_input(10,180,"n_init",10)
+    max_iter= add_input(10,220,"max_iter",300)
+
+    nsamples = add_input(10, 290, frame, "Nsamples", 10000)
+
+    def _start_with_nsamples():
+        run_kmeans()
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    return lambda: KMeans().run(df)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+    pass
+
+
+def knnTab(frame):
+    n_neighbords = add_input(10, 30, frame, 'n_neighbords', 5)
+    algorithm = add_input(10, 70, frame, 'algorithm', KNNAlgorithmType)
+    weight = add_input(10, 120, frame, 'weight', KNNWeightType)
+    test_size = StringVar()
+
+    Scale(frame, from_=0.1,
+          to=0.9,
+          length=90,
+          showvalue=1,
+          variable=test_size,
+          digits=2,
+          resolution=0.05,
+          orient="horizontal",
+          label='test_size').place(x=10, y=170)
+
+    def _start_with_nsamples():
+        run_kneares_neighbors(n_neighbords=int(n_neighbords.get()),
+                              algorithm=algorithm.get(),
+                              weight=weight.get(),
+                              test_size=float(test_size.get()))
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    y = df['target'].values
+                    x = df.drop(columns=['target'])
+                    x_train, x_test, y_train, y_test = train_test_split(
+                        x, y, test_size=test_size, random_state=1)
+                    return lambda: KNN(n_neighbors=n_neighbords.get(),
+                                       algorithm=algorithm.get(), weights=weight.get()).run(train_x=x_train, y_train=y_train, x_test=x_test)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+
+
+def naive_bayesTab(frame):
+
+    test_size = StringVar()
+    Scale(frame, from_=0.1,
+          to=0.9,
+          length=90,
+          showvalue=1,
+          variable=test_size,
+          digits=2,
+          resolution=0.05,
+          orient="horizontal",
+          label='test_size').place(x=10, y=40)
+
+    def _start_with_nsamples():
+        run_naive_bayes(test_size=float(test_size.get()))
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    y = df['target'].values
+                    x = df.drop(columns=['target'])
+                    x_train, x_test, y_train, y_test = train_test_split(
+                        x, y, test_size=test_size, random_state=1)
+                    return lambda: NaiveBayes().run(x_train=x_train, y_train=y_train, x_test=x_test)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+
+
+def decision_treeTab(frame):
+    criterion = add_input(10, 30, frame, 'Criterion', DecisionTreeCriterion)
+    splitter = add_input(10, 80, frame, "Splitter", DecisionTreeSplitter)
+    test_size = StringVar()
+    Scale(frame, from_=0.1,
+          to=0.9,
+          length=90,
+          showvalue=1,
+          variable=test_size,
+          digits=2,
+          resolution=0.05,
+          orient="horizontal",
+          label='test_size').place(x=10, y=130)
+
+    def _start_with_nsamples():
+        run_decision_tree(splitter=splitter.get(
+        ), criterion=criterion.get(), test_size=float(test_size.get()))
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    y = df['target'].values
+                    x = df.drop(columns=['target'])
+                    x_train, x_test, y_train, y_test = train_test_split(
+                        x, y, test_size=test_size, random_state=1)
+                    return lambda: DecisionTree(criterion=criterion,
+                                                splitter=splitter).run(x_train=x_train, y_train=y_train, x_test=x_test)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+    pass
 
 
 def run_algorithm(frame, dataframe, algorithm):

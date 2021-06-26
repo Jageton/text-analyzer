@@ -32,7 +32,8 @@ def _get_colors(predict):
 
 def run_algorithm_for_2_columns(algorithm, dataframe):
     predict = algorithm()
-    plt.scatter(dataframe.values[:, 0], dataframe.values[:, 1], c=_get_colors(predict), marker="o", picker=True)
+    plt.scatter(dataframe.values[:, 0], dataframe.values[:, 1], c=_get_colors(
+        predict), marker="o", picker=True)
     plt.title('Clusterization result')
     plt.xlabel(dataframe.columns[0])
     plt.ylabel(dataframe.columns[1])
@@ -58,11 +59,14 @@ def run_db_scan(nsamples, dataframe, eps, algorithm, metric, leaf_size, p):
     print(dataframe, nsamples)
     if dataframe is None:
         centers = [[1, 1], [-5, -5], [5, -5]]
-        X, labels_true = make_blobs(n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
+        X, labels_true = make_blobs(
+            n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
         X = StandardScaler().fit_transform(X)
-        predict = DBSCAN(eps=eps, metric=metric, algorithm=algorithm, p=p, leaf_size=leaf_size).run(X)
+        predict = DBSCAN(eps=eps, metric=metric,
+                         algorithm=algorithm, p=p, leaf_size=leaf_size).run(X)
     else:
-        predict = DBSCAN(eps=eps, metric=metric, algorithm=algorithm, p=p, leaf_size=leaf_size).run(dataframe)
+        predict = DBSCAN(eps=eps, metric=metric, algorithm=algorithm,
+                         p=p, leaf_size=leaf_size).run(dataframe)
         # X = dataframe
     print(predict)
     dataframe.columns[-1].replace(" ", "").split(',')
@@ -92,54 +96,81 @@ def run_db_scan(nsamples, dataframe, eps, algorithm, metric, leaf_size, p):
     # plt.show()
 
 
-def run_kmeans(params):
+def run_kmeans(nsamples, dataframe, n_clusters, init, algorithm, n_init, max_iter):
     # Configuration options
-    nsamples = params['nsamples']
-    cluster_std = params['cluster_std']
-    print("////////////////////  KMEANS WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " /////////")
-    cluster_centers = [(20, 20), (4, 4)]
-    num_classes = len(cluster_centers)
 
+    # nsamples = params['nsamples']
+    # cluster_std = params['cluster_std']
+    print("////////////////////  KMEANS WITH nsamples =", nsamples,
+          ", n_clusters =", n_clusters,
+          ", init =", init,
+          ", algorithm =", algorithm,
+          ", n_init =", n_init,
+          ", max_iter=", max_iter, " /////////")
+    predict = None
+    print(dataframe, nsamples)
+    if dataframe is None:
+        centers = [[1, 1], [-5, -5], [5, -5]]
+        X, labels_true = make_blobs(
+            n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
+        predict = KMeans(n_clusters=n_clusters,
+                         init=init,
+                         algorithm=algorithm,
+                         n_init=n_init,
+                         max_iter=max_iter).run(X)
+    else:
+        predict = KMeans(n_clusters=n_clusters,
+                         init=init,
+                         algorithm=algorithm,
+                         n_init=n_init,
+                         max_iter=max_iter).run(dataframe)
+    print(predict)
     # Generate data
     X, targets = make_blobs(n_samples=nsamples, centers=cluster_centers, n_features=num_classes,
                             center_box=(0, 1), cluster_std=cluster_std)
     predict = KMeans(n_clusters=num_classes, verbose=True).run(X)
 
     # Generate scatter plot for training data
-    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
-    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
-    plt.title('Clusterization result')
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.show()
+    # colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    # plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    # plt.title('Clusterization result')
+    # plt.xlabel('X')
+    # plt.ylabel('Y')
+    # plt.show()
 
 
-def run_spectral_clustering(params):
-    nsamples = params['nsamples']
-    cluster_std = params['cluster_std']
-    print("////////////////////  SPEACTRAL_CLUSTERING WITH nsamples =", nsamples, ", cluster_std=", cluster_std,
-          " ////////")
-    cluster_centers = [(20, 20), (4, 4)]
-    num_classes = len(cluster_centers)
+def run_spectral_clustering(nsamples,dataframe,n_clusters,eigen_solver):
 
+    print("////////////////////  SPEACTRAL_CLUSTERING WITH nsamples =", nsamples,
+    ", n_clusters =",n_clusters,
+    ", eigen_solver =",eigen_solver, " ////////")
+    predict = None
+    print(dataframe, nsamples)
+    if dataframe is None:
+        centers = [[1, 1], [-5, -5], [5, -5]]
+        X, labels_true = make_blobs(
+            n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
+        predict = SpectralCluster(n_clusters=n_clusters,
+        eigen_solver=eigen_solver ).run(X)
+    else:
+        predict = SpectralCluster(n_clusters=n_clusters,
+        eigen_solver=eigen_solver ).run(dataframe)
+    print(predict)
     # Generate data
-    X, targets = make_blobs(n_samples=nsamples, centers=cluster_centers, n_features=num_classes,
-                            center_box=(0, 1), cluster_std=cluster_std)
-    predict = SpectralCluster(n_clusters=num_classes, verbose=True).run(X)
-
     # Generate scatter plot for training data
-    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
-    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
-    plt.title('Clusterization result')
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.show()
+    # colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    # plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    # plt.title('Clusterization result')
+    # plt.xlabel('X')
+    # plt.ylabel('Y')
+    # plt.show()
 
 
 def run_fcm(params):
     nsamples = params['nsamples']
     cluster_std = params['cluster_std']
-    print("////////////////////  FCM WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " ////////")
+    print("////////////////////  FCM WITH nsamples =",
+          nsamples, ", cluster_std=", cluster_std, " ////////")
     weight = 2
     cluster_centers = [(20, 20), (4, 4)]
     cluster_number = len(cluster_centers)
@@ -162,7 +193,8 @@ def run_fcm(params):
             color = colorStore[point.group]
         pylab.plot(point.x, point.y, color)
     for single_trace in cluster_center_trace:
-        pylab.plot([center.x for center in single_trace], [center.y for center in single_trace], 'k')
+        pylab.plot([center.x for center in single_trace], [
+                   center.y for center in single_trace], 'k')
     pylab.show()
 
 
@@ -171,44 +203,55 @@ def run_birch(params):
     cluster_std = params['cluster_std']
     branching_factor = params['branching_factor']
     threeshold = params['threeshold']
-    print("////////////////////  BIRCH WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " ///////")
-    X, clusters = make_blobs(n_samples=nsamples, centers=6, cluster_std=cluster_std, random_state=0)
+    print("////////////////////  BIRCH WITH nsamples =",
+          nsamples, ", cluster_std=", cluster_std, " ///////")
+    X, clusters = make_blobs(
+        n_samples=nsamples, centers=6, cluster_std=cluster_std, random_state=0)
     plt.scatter(X[:, 0], X[:, 1], alpha=0.7, edgecolors='b')
     plt.show()
 
-    predict = Birch(branching_factor=branching_factor, n_clusters=None, threshold=threeshold).run(X)
+    predict = Birch(branching_factor=branching_factor,
+                    n_clusters=None, threshold=threeshold).run(X)
 
-    plt.scatter(X[:, 0], X[:, 1], c=predict, cmap='rainbow', alpha=0.7, edgecolors='b')
+    plt.scatter(X[:, 0], X[:, 1], c=predict,
+                cmap='rainbow', alpha=0.7, edgecolors='b')
     plt.show()
 
 
-def run_agglomerative(params):
-    nsamples = params['nsamples']
-    cluster_std = params['cluster_std']
-    print("////////////////////  AGGLOMERATIVE WITH nsamples =", nsamples, ", cluster_std=", cluster_std, " ///////")
-    # Configuration options
-    cluster_centers = [(20, 20), (4, 4)]
-    num_classes = len(cluster_centers)
+def run_agglomerative(nsamples, dataframe, linkage, n_clusters, affinity):
 
-    # Generate data
-    X, targets = make_blobs(n_samples=nsamples, centers=cluster_centers, n_features=num_classes,
-                            center_box=(0, 1), cluster_std=cluster_std)
-    predict = Aglomerative(n_cluster=num_classes).run(X)
+    # nsamples = params['nsamples']
+    # cluster_std = params['cluster_std']
+    # print("////////////////////  AGGLOMERATIVE WITH nsamples =",
+    #       nsamples, ", cluster_std=", cluster_std, " ///////")
+    # Configuration options
+    predict = None
+    print(dataframe, nsamples)
+    if(dataframe == None):
+        centers = [[1, 1], [-5, -5], [5, -5]]
+        # Generate data
+        X, targets = make_blobs(
+            n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
+        X = StandardScaler().fit_transform(X)
+        predict = Aglomerative(
+            linkage=linkage, n_clusters=n_clusters, affinity=affinity).run(X)
+    else:
+        predict = Aglomerative(
+            linkage=linkage, n_clusters=n_clusters, affinity=affinity).run(dataframe)
+    print(predict)
 
     # Generate scatter plot for training data
-    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
-    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
-    plt.title('Clusterization result')
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.show()
+    # colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    # plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    # plt.title('Clusterization result')
+    # plt.xlabel('X')
+    # plt.ylabel('Y')
+    # plt.show()
 
 
-def run_decision_tree(params):
-    test_size = params['test_size']
-    random_state = params['random_state']
-    print("////////////////////  DECISION_TREE WITH test_size =", test_size, ", random_state=", random_state,
-          " ///////")
+def run_decision_tree(test_size, criterion, splitter):
+    print("////////////////////  DECISION_TREE WITH test_size =", test_size,
+          ", criterion =", criterion, ", splitter =", splitter, "   ///////")
     iris = datasets.load_iris()
     iris_frame = DataFrame(iris.data)
     iris_frame.columns = iris.feature_names
@@ -216,17 +259,19 @@ def run_decision_tree(params):
 
     x = iris_frame.drop(columns=['target'])
     y = iris_frame['target'].values
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
-    predict = DecisionTree().run(train_x=x_train, train_y=y_train, test_x=x_test)
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=test_size, random_state=1)
+    predict = DecisionTree(criterion=criterion, splitter=splitter).run(
+        train_x=x_train, train_y=y_train, test_x=x_test)
     print(y_test)
     print(predict)
 
 
-def run_kneares_neighbors(params):
-    test_size = params['test_size']
-    random_state = params['random_state']
-    print("////////////////////  KNEAREST_NEIGHBORS WITH test_size =", test_size, ", random_state=", random_state,
-          " ///////")
+def run_kneares_neighbors(n_neighbords, algorithm, weight, test_size):
+    print("////////////////////  KNEAREST_NEIGHBORS WITH  n_neighbords =", n_neighbords,
+          "algorithm =", algorithm,
+          "weight =", weight,
+          "test_size =", test_size, " ///////")
     iris = datasets.load_iris()
     iris_frame = DataFrame(iris.data)
     iris_frame.columns = iris.feature_names
@@ -234,16 +279,18 @@ def run_kneares_neighbors(params):
 
     x = iris_frame.drop(columns=['target'])
     y = iris_frame['target'].values
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
-    predict = KNN(n_neighbors=5).run(x_train, y_train, x_test)
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=test_size, random_state=1)
+    predict = KNN(n_neighbors=n_neighbords,
+                  algorithm=algorithm,
+                  weights=weight).run(x_train, y_train, x_test)
     print(y_test)
     print(predict)
 
 
-def run_naive_bayes(params):
-    test_size = params['test_size']
-    random_state = params['random_state']
-    print("////////////////////  NAIVE_BAYES WITH test_size =", test_size, ", random_state=", random_state, " ///////")
+def run_naive_bayes(test_size):
+    print("////////////////////  NAIVE_BAYES WITH test_size =",
+          test_size, " ///////")
     iris = datasets.load_iris()
     iris_frame = DataFrame(iris.data)
     iris_frame.columns = iris.feature_names
@@ -251,7 +298,8 @@ def run_naive_bayes(params):
 
     x = iris_frame.drop(columns=['target'])
     y = iris_frame['target'].values
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=test_size, random_state=1)
     predict = NaiveBayes().run(x_train, y_train, x_test)
     print(y_test)
     print(predict)
