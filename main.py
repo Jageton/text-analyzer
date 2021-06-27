@@ -1,6 +1,7 @@
 # This is a sample Python script.
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from clustering.k_means.k_means import KMeansInitType, KMeansAlgorithmType
 from clustering.spectral_clustering.spectral_clustering import EigenSolver
 from classification.decision_tree.decision_tree import DecisionTreeCriterion, DecisionTreeSplitter
 from classification.knn.k_nearest_neighbors import KNNAlgorithmType, KNNWeightType
@@ -47,26 +48,21 @@ def main():
     tabControl.add(tab5, text='Naive Bayes')
     tabControl.add(tab6, text='Decision Tree')
     tabControl.add(tab7, text='Spectral clustering')
-    tabControl.add(tab8, text='M Means')
+    tabControl.add(tab8, text='K Means')
 
     tabControl.add(log_tab, text='Log')
     tabControl.place(x=0, y=300)
 
     db_scan_tab(tab1)
+    birch_tab(tab2)
     aglomerativeTab(tab3)
     knnTab(tab4)
     naive_bayesTab(tab5)
     decision_treeTab(tab6)
     spectralClusteringTab(tab7)
-    k_meansTab(tab8)
+    k_means_tab(tab8)
     fill_log_tab(log_tab)
 
-    ttk.Label(tab2,
-              text="Lets dive into the\
-              world of computers").grid(column=0,
-                                        row=0,
-                                        padx=30,
-                                        pady=30)
 
     label = Label(window, text="Ресурсы")
     label.place(x=10, y=10)
@@ -137,6 +133,40 @@ def delete_file_button_clicked(listbox: Listbox):
     if index != ():
         listbox.delete(index)
 
+
+def birch_tab(frame):
+    threshold = add_input(10, 30, frame, "Threshold", 0.5)
+    branching_factor = add_input(10, 80, frame, "Branching factor", 50)
+    n_clusters = add_input(10, 130, frame, "N clusters", 3)
+    nsamples = add_input(10, 290, frame, "Nsamples", 10000)
+
+    def _start_with_nsamples():
+        run_birch(int(nsamples.get()), float(threshold.get()), int(branching_factor.get()), int(n_clusters.get()))
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    return lambda: Birch(threshold=float(threshold.get()), branching_factor=int(branching_factor.get()), n_clusters=int(n_clusters.get())).run(df)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
 
 # TODO: И так для каждого алгоритма
 def db_scan_tab(frame):
@@ -209,9 +239,9 @@ def aglomerativeTab(frame):
                 dataframe = pandas.read_csv(path)
 
                 def _start(df):
-                    return lambda: Aglomerative(n_cluster=int(n_clusters.get()),
+                    return lambda: Aglomerative(n_clusters=int(n_clusters.get()),
                                                 linkage=linkage.get(),
-                                                affinity=affinity.get() if linkage.get() != 'ward'else AffinityType.euclidean.value
+                                                affinity=affinity.get() if linkage.get() != 'ward' else AffinityType.euclidean.value
                                                 ).run(df)
 
                 run_algorithm(frame, dataframe.copy(), _start)
@@ -237,7 +267,7 @@ def spectralClusteringTab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_spectral_clustering()
+        run_spectral_clustering(int(nsamples.get()), None, int(n_clusters.get()), eigen_solver.get())
 
     def _start_with_file():
         try:
@@ -266,18 +296,17 @@ def spectralClusteringTab(frame):
            command=_start_with_file).place(x=200, y=340)
 
 
-
-def k_meansTab(frame):
+def k_means_tab(frame):
     n_clusters = add_input(10, 30, frame, 'n_clusters', 2)
-    init = add_input(10,80,frame,"init",KMeansInitType)
-    algorithm = add_input(10,140,"algorithm",KMeansAlgorithmType)
-    n_init = add_input(10,180,"n_init",10)
-    max_iter= add_input(10,220,"max_iter",300)
+    init = add_input(10, 80, frame, "init", KMeansInitType)
+    algorithm = add_input(10, 140, frame, "algorithm", KMeansAlgorithmType)
+    n_init = add_input(10, 180, frame, "n_init", 10)
+    max_iter = add_input(10, 220, frame, "max_iter", 300)
 
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_kmeans()
+        run_kmeans(int(nsamples.get()), None, int(n_clusters.get()), init.get(), algorithm.get(), int(n_init.get()), int(max_iter.get()))
 
     def _start_with_file():
         try:
@@ -340,7 +369,9 @@ def knnTab(frame):
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, test_size=test_size, random_state=1)
                     return lambda: KNN(n_neighbors=n_neighbords.get(),
-                                       algorithm=algorithm.get(), weights=weight.get()).run(train_x=x_train, y_train=y_train, x_test=x_test)
+                                       algorithm=algorithm.get(), weights=weight.get()).run(train_x=x_train,
+                                                                                            y_train=y_train,
+                                                                                            x_test=x_test)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -360,7 +391,6 @@ def knnTab(frame):
 
 
 def naive_bayesTab(frame):
-
     test_size = StringVar()
     Scale(frame, from_=0.1,
           to=0.9,

@@ -69,31 +69,30 @@ def run_db_scan(nsamples, dataframe, eps, algorithm, metric, leaf_size, p):
                          p=p, leaf_size=leaf_size).run(dataframe)
         # X = dataframe
     print(predict)
-    dataframe.columns[-1].replace(" ", "").split(',')
 
-    # # Plot result
-    # core_samples_mask = np.zeros_like(predict, dtype=bool)
-    # core_samples_mask[range(0, nsamples)] = True
-    #
-    # # Black removed and is used for noise instead.
-    # unique_labels = set(predict)
-    # colors = [plt.cm.Spectral(each)
-    #           for each in np.linspace(0, 1, len(unique_labels))]
-    # for k, col in zip(unique_labels, colors):
-    #     if k == -1:
-    #         # Black used for noise.
-    #         col = [0, 0, 0, 1]
-    #
-    #     class_member_mask = (predict == k)
-    #
-    #     xy = X[class_member_mask & core_samples_mask]
-    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=14)
-    #
-    #     xy = X[class_member_mask & ~core_samples_mask]
-    #     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=6)
-    #
-    # plt.title('Estimated number of clusters: %d' % 3)
-    # plt.show()
+    # Plot result
+    core_samples_mask = np.zeros_like(predict, dtype=bool)
+    core_samples_mask[range(0, nsamples)] = True
+
+    # Black removed and is used for noise instead.
+    unique_labels = set(predict)
+    colors = [plt.cm.Spectral(each)
+              for each in np.linspace(0, 1, len(unique_labels))]
+    for k, col in zip(unique_labels, colors):
+        if k == -1:
+            # Black used for noise.
+            col = [0, 0, 0, 1]
+
+        class_member_mask = (predict == k)
+
+        xy = X[class_member_mask & core_samples_mask]
+        plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=14)
+
+        xy = X[class_member_mask & ~core_samples_mask]
+        plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col), markeredgecolor='k', markersize=6)
+
+    plt.title('Estimated number of clusters: %d' % 3)
+    plt.show()
 
 
 def run_kmeans(nsamples, dataframe, n_clusters, init, algorithm, n_init, max_iter):
@@ -126,17 +125,14 @@ def run_kmeans(nsamples, dataframe, n_clusters, init, algorithm, n_init, max_ite
                          max_iter=max_iter).run(dataframe)
     print(predict)
     # Generate data
-    X, targets = make_blobs(n_samples=nsamples, centers=cluster_centers, n_features=num_classes,
-                            center_box=(0, 1), cluster_std=cluster_std)
-    predict = KMeans(n_clusters=num_classes, verbose=True).run(X)
 
     # Generate scatter plot for training data
-    # colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
-    # plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
-    # plt.title('Clusterization result')
-    # plt.xlabel('X')
-    # plt.ylabel('Y')
-    # plt.show()
+    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    plt.title('Clusterization result')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.show()
 
 
 def run_spectral_clustering(nsamples,dataframe,n_clusters,eigen_solver):
@@ -144,7 +140,6 @@ def run_spectral_clustering(nsamples,dataframe,n_clusters,eigen_solver):
     print("////////////////////  SPEACTRAL_CLUSTERING WITH nsamples =", nsamples,
     ", n_clusters =",n_clusters,
     ", eigen_solver =",eigen_solver, " ////////")
-    predict = None
     print(dataframe, nsamples)
     if dataframe is None:
         centers = [[1, 1], [-5, -5], [5, -5]]
@@ -158,12 +153,12 @@ def run_spectral_clustering(nsamples,dataframe,n_clusters,eigen_solver):
     print(predict)
     # Generate data
     # Generate scatter plot for training data
-    # colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
-    # plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
-    # plt.title('Clusterization result')
-    # plt.xlabel('X')
-    # plt.ylabel('Y')
-    # plt.show()
+    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    plt.title('Clusterization result')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.show()
 
 
 def run_fcm(params):
@@ -198,20 +193,14 @@ def run_fcm(params):
     pylab.show()
 
 
-def run_birch(params):
-    nsamples = params['nsamples']
-    cluster_std = params['cluster_std']
-    branching_factor = params['branching_factor']
-    threeshold = params['threeshold']
-    print("////////////////////  BIRCH WITH nsamples =",
-          nsamples, ", cluster_std=", cluster_std, " ///////")
+def run_birch(nsamples, threshold, branching_factor, n_clusters):
     X, clusters = make_blobs(
-        n_samples=nsamples, centers=6, cluster_std=cluster_std, random_state=0)
+        n_samples=nsamples, centers=6, cluster_std=2, random_state=0)
     plt.scatter(X[:, 0], X[:, 1], alpha=0.7, edgecolors='b')
     plt.show()
 
     predict = Birch(branching_factor=branching_factor,
-                    n_clusters=None, threshold=threeshold).run(X)
+                    n_clusters=n_clusters, threshold=threshold).run(X)
 
     plt.scatter(X[:, 0], X[:, 1], c=predict,
                 cmap='rainbow', alpha=0.7, edgecolors='b')
@@ -227,7 +216,7 @@ def run_agglomerative(nsamples, dataframe, linkage, n_clusters, affinity):
     # Configuration options
     predict = None
     print(dataframe, nsamples)
-    if(dataframe == None):
+    if dataframe is None:
         centers = [[1, 1], [-5, -5], [5, -5]]
         # Generate data
         X, targets = make_blobs(
@@ -241,12 +230,12 @@ def run_agglomerative(nsamples, dataframe, linkage, n_clusters, affinity):
     print(predict)
 
     # Generate scatter plot for training data
-    # colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
-    # plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
-    # plt.title('Clusterization result')
-    # plt.xlabel('X')
-    # plt.ylabel('Y')
-    # plt.show()
+    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    plt.title('Clusterization result')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.show()
 
 
 def run_decision_tree(test_size, criterion, splitter):
