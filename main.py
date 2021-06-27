@@ -521,7 +521,7 @@ def run_algorithm(frame, dataframe, algorithm):
             if combo_box1.get() != name and combo_box2.get() != name and combo_box3.get() != name:
                 del df[name]
 
-        alg = algorithm(df)
+        alg = algorithm(dataframe)
         if len(df.columns) == 2:
             run_algorithm_for_2_columns(alg, df)
         else:
