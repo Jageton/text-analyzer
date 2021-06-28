@@ -1,6 +1,8 @@
 # This is a sample Python script.
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from clustering.mean_shift.mean_shift import MeanShift
+from classification.random_forests.random_forests import RandomForest, RandomForestCriterion
 from clustering.k_means.k_means import KMeansInitType, KMeansAlgorithmType
 from clustering.spectral_clustering.spectral_clustering import EigenSolver
 from classification.decision_tree.decision_tree import DecisionTreeCriterion, DecisionTreeSplitter
@@ -38,31 +40,37 @@ def main():
     tab6 = ttk.Frame(tabControl)
     tab7 = ttk.Frame(tabControl)
     tab8 = ttk.Frame(tabControl)
+    tab9 = ttk.Frame(tabControl)
+    tab10 = ttk.Frame(tabControl)
 
     log_tab = ttk.Frame(tabControl)
 
-    tabControl.add(tab1, text='DB SCAN')
-    tabControl.add(tab2, text='Birch')
-    tabControl.add(tab3, text='Aglomerative')
-    tabControl.add(tab4, text='KNN')
-    tabControl.add(tab5, text='Naive Bayes')
-    tabControl.add(tab6, text='Decision Tree')
-    tabControl.add(tab7, text='Spectral clustering')
-    tabControl.add(tab8, text='K Means')
+    tabControl.add(tab1, text='KNN')
+    tabControl.add(tab2, text='Naive Bayes')
+    tabControl.add(tab3, text='Decision Tree')
+    tabControl.add(tab4, text='Random forest')
+    tabControl.add(tab5, text='DB SCAN')
+    tabControl.add(tab6, text='Birch')
+    tabControl.add(tab7, text='Aglomerative')
+    tabControl.add(tab8, text='Spectral clustering')
+    tabControl.add(tab9, text='K Means')
+    tabControl.add(tab10, text='Mean Shift')
 
     tabControl.add(log_tab, text='Log')
     tabControl.place(x=0, y=300)
 
-    db_scan_tab(tab1)
-    birch_tab(tab2)
-    aglomerativeTab(tab3)
-    knnTab(tab4)
-    naive_bayesTab(tab5)
-    decision_treeTab(tab6)
-    spectralClusteringTab(tab7)
-    k_means_tab(tab8)
-    fill_log_tab(log_tab)
+    knnTab(tab1)
+    naive_bayesTab(tab2)
+    decision_treeTab(tab3)
+    random_forestTab(tab4)
 
+    db_scan_tab(tab5)
+    birch_tab(tab6)
+    aglomerativeTab(tab7)
+    spectralClusteringTab(tab8)
+    k_means_tab(tab9)
+    mean_shitTab(tab10)
+    fill_log_tab(log_tab)
 
     label = Label(window, text="Ресурсы")
     label.place(x=10, y=10)
@@ -141,7 +149,8 @@ def birch_tab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_birch(int(nsamples.get()), float(threshold.get()), int(branching_factor.get()), int(n_clusters.get()))
+        run_birch(int(nsamples.get()), float(threshold.get()),
+                  int(branching_factor.get()), int(n_clusters.get()))
 
     def _start_with_file():
         try:
@@ -169,6 +178,8 @@ def birch_tab(frame):
            command=_start_with_file).place(x=200, y=340)
 
 # TODO: И так для каждого алгоритма
+
+
 def db_scan_tab(frame):
     eps = add_input(10, 30, frame, "Eps", 0.5)
     metric = add_input(10, 80, frame, "Metric", DBSCANMetricType)
@@ -267,7 +278,8 @@ def spectralClusteringTab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_spectral_clustering(int(nsamples.get()), None, int(n_clusters.get()), eigen_solver.get())
+        run_spectral_clustering(int(nsamples.get()), None, int(
+            n_clusters.get()), eigen_solver.get())
 
     def _start_with_file():
         try:
@@ -306,7 +318,8 @@ def k_means_tab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_kmeans(int(nsamples.get()), None, int(n_clusters.get()), init.get(), algorithm.get(), int(n_init.get()), int(max_iter.get()))
+        run_kmeans(int(nsamples.get()), None, int(n_clusters.get()), init.get(
+        ), algorithm.get(), int(n_init.get()), int(max_iter.get()))
 
     def _start_with_file():
         try:
@@ -467,6 +480,109 @@ def decision_treeTab(frame):
                         x, y, test_size=test_size, random_state=1)
                     return lambda: DecisionTree(criterion=criterion,
                                                 splitter=splitter).run(x_train=x_train, y_train=y_train, x_test=x_test)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+    pass
+
+
+def random_forestTab(frame):
+    n_estimators = add_input(10, 30, frame, "n_estimators", 100)
+    criterion = add_input(10, 80, frame, "criterion", RandomForestCriterion)
+    verbose = add_input(10, 130, frame, 'verbose', 0)
+    random_state = add_input(10, 180, frame, "random state", 1)
+    test_size = StringVar()
+
+    Scale(frame, from_=0.1,
+          to=0.9,
+          length=90,
+          showvalue=1,
+          variable=test_size,
+          digits=2,
+          resolution=0.05,
+          orient="horizontal",
+          label='test_size').place(x=140, y=30)
+
+    def _start_with_nsamples():
+        run_random_forest(n_estimators=int(n_estimators.get()),
+                          criterion=criterion.get(),
+                          verbose=int(verbose.get()),
+                          random_state=int(random_state.get()),
+                          test_size=float(test_size.get()))
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    y = df['target'].values
+                    x = df.drop(columns=['target'])
+                    x_train, x_test, y_train, y_test = train_test_split(
+                        x, y, test_size=test_size, random_state=1)
+                    return lambda: RandomForest(n_estimators=int(n_estimators.get()),
+                                                criterion=criterion.get(),
+                                                verbose=int(verbose.get()),
+                                                random_state=int(random_state.get())).run(train_x=x_train,
+                                                                                          y_train=y_train,
+                                                                                          x_test=x_test)
+
+                run_algorithm(frame, dataframe.copy(), _start)
+            else:
+                messagebox.showerror(message='Не был выбран файл или URL')
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+            messagebox.showerror(
+                message="Произошла ошибочка. Посмотрите в лог.")
+
+    Button(frame, text="Запустить с nsamples",
+           command=_start_with_nsamples).place(x=10, y=340)
+    Button(frame, text="Запустить на файле",
+           command=_start_with_file).place(x=200, y=340)
+    pass
+
+
+def mean_shitTab(frame):
+    max_iter = add_input(10, 30, frame, "max_iter", 300)
+    bin_seeding = BooleanVar()
+    cluster_all = BooleanVar()
+    Checkbutton(frame, text="bin_seeding",
+                variable=bin_seeding).place(x=100, y=30)
+    Checkbutton(frame, text="cluster_all",
+                variable=cluster_all).place(x=100, y=50)
+
+    nsamples = add_input(10, 290, frame, "Nsamples", 10000)
+
+    def _start_with_nsamples():
+        run_mean_shift(dataframe=None, max_iter=int(max_iter.get()),
+                       bin_seeding=bin_seeding.get(), cluster_all=cluster_all.get(), nsamples=int(nsamples.get()))
+
+    def _start_with_file():
+        try:
+            path = listbox.get(ACTIVE)
+            if path != "":
+                dataframe = pandas.read_csv(path)
+
+                def _start(df):
+                    return lambda: MeanShift(max_iter=int(max_iter.get()),
+                                             bin_seeding=bin_seeding.get(), cluster_all=cluster_all.get()).run(df)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
