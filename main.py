@@ -401,6 +401,7 @@ def naive_bayesTab(frame):
           resolution=0.05,
           orient="horizontal",
           label='test_size').place(x=10, y=40)
+    var_smoothing = add_input(10, 140, frame, "var_smoothing", "0.00000009")
 
     def _start_with_nsamples():
         run_naive_bayes(test_size=float(test_size.get()))
@@ -416,7 +417,7 @@ def naive_bayesTab(frame):
                     x = df.drop(columns=['target'])
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, test_size=test_size, random_state=1)
-                    return lambda: NaiveBayes().run(x_train=x_train, y_train=y_train, x_test=x_test)
+                    return lambda: NaiveBayes(var_smoothing=float(var_smoothing.get())).run(x_train=x_train, y_train=y_train, x_test=x_test)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
