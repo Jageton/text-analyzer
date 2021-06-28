@@ -70,7 +70,6 @@ class DBSCANTest(unittest.TestCase):
 
     def test_iris(self):
         iris = datasets.load_iris()
-        Bunch.fromkeys()
         iris_frame = DataFrame(iris.data)
         iris_frame.columns = iris.feature_names
         iris_frame['target'] = iris.target
