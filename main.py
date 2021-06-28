@@ -495,8 +495,6 @@ def run_algorithm(frame, dataframe, algorithm):
     new_window.rowconfigure(1, pad=10)
     new_window.rowconfigure(2, pad=20)
 
-    del dataframe[dataframe.columns[-1]]
-
     Label(new_window, text="Первый столбец*").grid(column=0, row=0)
     combo_box1 = ttk.Combobox(new_window,
                               values=[i for i in dataframe.columns], width=10)
