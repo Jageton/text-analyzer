@@ -14,7 +14,7 @@ class KMeansTest(unittest.TestCase):
     def test_1000_random_points(self):
         # Configuration options
         num_samples_total = 1000
-        cluster_centers = [(20, 20), (4, 4)]
+        cluster_centers = [(20, 20), (4, 4), (20, 4), (4, 20)]
         num_classes = len(cluster_centers)
 
         # Generate data
@@ -23,7 +23,8 @@ class KMeansTest(unittest.TestCase):
         predict = KMeans(n_clusters=num_classes).run(X)
 
         # Generate scatter plot for training data
-        colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
+        colors = ['#DF06FC', '#3b4cc0', '#b50525', '#1AFC06', '#000000']
+        colors = list(map(lambda x: colors[x], predict))
         plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
         plt.title('Clusterization result')
         plt.xlabel('X')
@@ -33,7 +34,12 @@ class KMeansTest(unittest.TestCase):
         # Asserts:
         first_cluster_cnt = list(predict).count(0)
         second_cluster_cnt = list(predict).count(1)
+        third_cluster_cnt = list(predict).count(2)
+        forth_cluster_cnt = list(predict).count(3)
+
         self.assertEqual(first_cluster_cnt, second_cluster_cnt)
+        self.assertEqual(second_cluster_cnt, third_cluster_cnt)
+        self.assertEqual(third_cluster_cnt, forth_cluster_cnt)
 
     def test_6_known_points(self):
         # Generate data
@@ -68,11 +74,30 @@ class KMeansTest(unittest.TestCase):
         second_cluster_cnt = list(result).count(1)
         third_cluster_cnt = list(result).count(2)
 
+        run_algorithm_for_2_columns(result, iris_frame)
+
         print('Изначальное распределение точек по кластерам: ',
               first_target_cluster_cnt, second_target_cluster_cnt, third_target_cluster_cnt)
         print('Распределение точек по кластерам после кластеризации: ',
               first_cluster_cnt, second_cluster_cnt, third_cluster_cnt)
 
+
+colors = ['#47a8f2', '#3b4cc0', '#b50525', '#b40426', '#000000']
+
+def run_algorithm_for_2_columns(predict, dataframe):
+    plt.scatter(dataframe.values[:, 1], dataframe.values[:, 2], c=_get_colors(predict), marker="o", picker=True)
+    plt.title('Clusterization result')
+    plt.xlabel(dataframe.columns[1])
+    plt.ylabel(dataframe.columns[2])
+    plt.show()
+
+def _get_colors(predict):
+        return list(map(get_color, predict))
+
+def get_color(x):
+    if 0 > x or x > 2:
+        return colors[3]
+    return colors[x]
 
 if __name__ == '__main__':
     unittest.main()
