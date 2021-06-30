@@ -6,6 +6,7 @@ from pandas import DataFrame
 from sklearn import datasets
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import Bunch
 
 from clustering.dbscan.dbscan import DBSCAN
 

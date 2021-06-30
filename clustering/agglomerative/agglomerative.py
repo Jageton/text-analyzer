@@ -19,10 +19,10 @@ class LinkageType(Enum):
 
 
 class Aglomerative:
-    def __init__(self, n_cluster: int = 2, affinity: AffinityType = AffinityType.euclidean.value, memory=None, connectivity=None,
+    def __init__(self, n_clusters: int = 2, affinity: AffinityType = AffinityType.euclidean.value, memory=None, connectivity=None,
                  compute_full_tree='auto', linkage:LinkageType=LinkageType.ward.value, distance_threshold:float=None,
                  compute_distances:bool=False) -> None:
-        self.n_cluster = n_cluster
+        self.n_clusters = n_clusters
         self.affinity = affinity
         self.memory = memory
         self.connectivity = connectivity
@@ -32,7 +32,7 @@ class Aglomerative:
         self.compute_distances = compute_distances
 
     def run(self, X):
-        clustering = AgglomerativeClustering(n_clusters=self.n_cluster, affinity=self.affinity, memory=self.memory,
+        clustering = AgglomerativeClustering(n_clusters=self.n_clusters, affinity=self.affinity, memory=self.memory,
                                              connectivity=self.connectivity, compute_full_tree=self.compute_full_tree, linkage=self.linkage,
                                              distance_threshold=self.distance_threshold, compute_distances=self.compute_distances)
         return clustering.fit_predict(X=X)
