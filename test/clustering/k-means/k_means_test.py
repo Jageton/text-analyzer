@@ -1,12 +1,12 @@
 import unittest
 
-import matplotlib.pyplot as plt
 import numpy as np
 from pandas.core.frame import DataFrame
 from sklearn import datasets
 from sklearn.datasets import make_blobs
 
 from clustering.k_means.k_means import KMeans
+from util.visualization import data_2d_visualization
 
 
 class KMeansTest(unittest.TestCase):
@@ -21,15 +21,7 @@ class KMeansTest(unittest.TestCase):
         X, targets = make_blobs(n_samples=num_samples_total, centers=cluster_centers, n_features=num_classes,
                                 center_box=(0, 1), cluster_std=2)
         predict = KMeans(n_clusters=num_classes).run(X)
-
-        # Generate scatter plot for training data
-        colors = ['#DF06FC', '#3b4cc0', '#b50525', '#1AFC06', '#000000']
-        colors = list(map(lambda x: colors[x], predict))
-        plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
-        plt.title('Clusterization result')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.show()
+        data_2d_visualization(X, predict)
 
         # Asserts:
         first_cluster_cnt = list(predict).count(0)
@@ -46,23 +38,26 @@ class KMeansTest(unittest.TestCase):
         X = np.array([[1, 2], [1, 4], [1, 0],
                       [10, 2], [10, 4], [10, 0]])
         predict = KMeans(n_clusters=2, random_state=0).run(X)
+        data_2d_visualization(X, predict)
         predict_list = list(predict)
 
         # Asserts:
-        self.assertEqual(predict_list[0], 1)
-        self.assertEqual(predict_list[1], 1)
-        self.assertEqual(predict_list[2], 1)
+        self.assertEqual(predict_list[0], predict_list[1])
+        self.assertEqual(predict_list[1], predict_list[2])
 
-        self.assertEqual(predict_list[3], 0)
-        self.assertEqual(predict_list[4], 0)
-        self.assertEqual(predict_list[5], 0)
+        self.assertEqual(predict_list[3], predict_list[4])
+        self.assertEqual(predict_list[4], predict_list[5])
+
+        self.assertNotEqual(predict_list[0], predict_list[3])
 
     def test_iris(self):
         iris = datasets.load_iris()
         iris_frame = DataFrame(iris.data)
         iris_frame.columns = iris.feature_names
         iris_frame['target'] = iris.target
+
         result = KMeans(n_clusters=3).run(iris_frame)
+        data_2d_visualization(iris_frame, result)
         target_list = list(iris_frame['target'])
 
         # Asserts:
@@ -74,30 +69,11 @@ class KMeansTest(unittest.TestCase):
         second_cluster_cnt = list(result).count(1)
         third_cluster_cnt = list(result).count(2)
 
-        run_algorithm_for_2_columns(result, iris_frame)
-
         print('Изначальное распределение точек по кластерам: ',
               first_target_cluster_cnt, second_target_cluster_cnt, third_target_cluster_cnt)
         print('Распределение точек по кластерам после кластеризации: ',
               first_cluster_cnt, second_cluster_cnt, third_cluster_cnt)
 
-
-colors = ['#47a8f2', '#3b4cc0', '#b50525', '#b40426', '#000000']
-
-def run_algorithm_for_2_columns(predict, dataframe):
-    plt.scatter(dataframe.values[:, 1], dataframe.values[:, 2], c=_get_colors(predict), marker="o", picker=True)
-    plt.title('Clusterization result')
-    plt.xlabel(dataframe.columns[1])
-    plt.ylabel(dataframe.columns[2])
-    plt.show()
-
-def _get_colors(predict):
-        return list(map(get_color, predict))
-
-def get_color(x):
-    if 0 > x or x > 2:
-        return colors[3]
-    return colors[x]
 
 if __name__ == '__main__':
     unittest.main()
