@@ -17,6 +17,7 @@ from clustering.k_means.k_means import KMeansInitType, KMeansAlgorithmType
 from clustering.spectral_clustering.spectral_clustering import EigenSolver
 from pio.input import Input
 from runner import *
+from util.visualization import data_3d_visualization
 
 listbox = None
 
@@ -171,7 +172,7 @@ def db_scan_tab(frame):
 
     def _start_with_nsamples():
         power = p.get() != "2" if None else 2
-        run_db_scan(nsamples=int(nsamples.get()), dataframe=None, eps=float(eps.get()), metric=metric.get(),
+        run_db_scan(nsamples=int(nsamples.get()), eps=float(eps.get()), metric=metric.get(),
                     algorithm=algorithm.get(),
                     leaf_size=int(leaf_size.get()),
                     p=power)
@@ -200,7 +201,6 @@ def agglomerative_tab(frame):
 
     def _start_with_nsamples():
         run_agglomerative(nsamples=int(nsamples.get()),
-                          dataframe=None,
                           affinity=affinity.get(),
                           linkage=linkage.get(),
                           n_clusters=int(n_clusters.get()))
@@ -227,7 +227,7 @@ def spectral_clustering_tab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_spectral_clustering(int(nsamples.get()), None, int(n_clusters.get()), eigen_solver.get())
+        run_spectral_clustering(int(nsamples.get()), int(n_clusters.get()), eigen_solver.get())
 
     def _start_with_file():
         def _start(df):
@@ -251,7 +251,7 @@ def k_means_tab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_kmeans(int(nsamples.get()), None, int(n_clusters.get()), init.get(),
+        run_kmeans(int(nsamples.get()), int(n_clusters.get()), init.get(),
                    algorithm.get(), int(n_init.get()), int(max_iter.get()))
 
     def _start_with_file():
@@ -281,10 +281,10 @@ def knn_tab(frame):
     ).place(x=10, y=170)
 
     def _start_with_nsamples():
-        run_kneares_neighbors(n_neighbords=int(n_neighbors.get()),
-                              algorithm=algorithm.get(),
-                              weight=weight.get(),
-                              test_size=float(test_size.get()))
+        run_knearest_neighbors(n_neighbors=int(n_neighbors.get()),
+                               algorithm=algorithm.get(),
+                               weight=weight.get(),
+                               test_size=float(test_size.get()))
 
     def _start_with_file():
         def _start(df):
@@ -345,8 +345,7 @@ def decision_tree_tab(frame):
     ).place(x=10, y=130)
 
     def _start_with_nsamples():
-        run_decision_tree(splitter=splitter.get(
-        ), criterion=criterion.get(), test_size=float(test_size.get()))
+        run_decision_tree(splitter=splitter.get(), criterion=criterion.get(), test_size=float(test_size.get()))
 
     def _start_with_file():
         def _start(df):
@@ -416,8 +415,8 @@ def mean_shift_tab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_mean_shift(dataframe=None, max_iter=int(max_iter.get()),
-                       bin_seeding=bin_seeding.get(), cluster_all=cluster_all.get(), nsamples=int(nsamples.get()))
+        run_mean_shift(max_iter=int(max_iter.get()), bin_seeding=bin_seeding.get(),
+                       cluster_all=cluster_all.get(), nsamples=int(nsamples.get()))
 
     def _start_with_file():
         def _start(df):
@@ -468,10 +467,11 @@ def run_algorithm(frame, dataframe, algorithm):
                 del df[name]
 
         alg = algorithm(dataframe)
+        predict = alg()
         if len(df.columns) == 2:
-            run_algorithm_for_2_columns(alg, df)
+            data_2d_visualization(dataframe, predict)
         else:
-            run_algorithm_for_3_columns(alg, df)
+            data_3d_visualization(dataframe, predict)
 
     Button(new_window, text='Запустить', command=_start).grid(column=1, row=2)
 
