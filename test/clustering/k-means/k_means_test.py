@@ -8,6 +8,9 @@ from sklearn.datasets import make_blobs
 
 from clustering.k_means.k_means import KMeans
 
+colors = ['#3b4cc0', '#db2c2c', '#13e700', '#ffdd00', '#ff52d5',
+          '#08c7c9', '#5e2594', '#a0ff45', '#f36c1f', '#B3B6B7']
+
 
 class KMeansTest(unittest.TestCase):
 
@@ -23,9 +26,7 @@ class KMeansTest(unittest.TestCase):
         predict = KMeans(n_clusters=num_classes).run(X)
 
         # Generate scatter plot for training data
-        colors = ['#DF06FC', '#3b4cc0', '#b50525', '#1AFC06', '#000000']
-        colors = list(map(lambda x: colors[x], predict))
-        plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+        plt.scatter(X[:, 0], X[:, 1], c=_get_colors(predict), marker="o", picker=True)
         plt.title('Clusterization result')
         plt.xlabel('X')
         plt.ylabel('Y')
@@ -82,8 +83,6 @@ class KMeansTest(unittest.TestCase):
               first_cluster_cnt, second_cluster_cnt, third_cluster_cnt)
 
 
-colors = ['#47a8f2', '#3b4cc0', '#b50525', '#b40426', '#000000']
-
 def run_algorithm_for_2_columns(predict, dataframe):
     plt.scatter(dataframe.values[:, 1], dataframe.values[:, 2], c=_get_colors(predict), marker="o", picker=True)
     plt.title('Clusterization result')
@@ -91,13 +90,16 @@ def run_algorithm_for_2_columns(predict, dataframe):
     plt.ylabel(dataframe.columns[2])
     plt.show()
 
+
 def _get_colors(predict):
-        return list(map(get_color, predict))
+    return list(map(get_color, predict))
+
 
 def get_color(x):
-    if 0 > x or x > 2:
-        return colors[3]
-    return colors[x]
+    if x < 0:
+        return '#000000'
+    return colors[x % len(colors)]
+
 
 if __name__ == '__main__':
     unittest.main()
