@@ -1,27 +1,22 @@
-# This is a sample Python script.
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-from clustering.mean_shift.mean_shift import MeanShift
-from classification.random_forests.random_forests import RandomForest, RandomForestCriterion
-from clustering.k_means.k_means import KMeansInitType, KMeansAlgorithmType
-from clustering.spectral_clustering.spectral_clustering import EigenSolver
-from classification.decision_tree.decision_tree import DecisionTreeCriterion, DecisionTreeSplitter
-from classification.knn.k_nearest_neighbors import KNNAlgorithmType, KNNWeightType
-from clustering.agglomerative.agglomerative import AffinityType, LinkageType
 import urllib.request
 from enum import Enum
+from os import getcwd
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
-import sys
-from os import getcwd
 from tkinter.ttk import Notebook
 
 import pandas
 
 from buffer import Buffer
+from classification.decision_tree.decision_tree import DecisionTreeCriterion, DecisionTreeSplitter
+from classification.knn.k_nearest_neighbors import KNNAlgorithmType, KNNWeightType
+from classification.random_forests.random_forests import RandomForestCriterion
+from clustering.agglomerative_clustering.agglomerative_clustering import AffinityType, LinkageType
 from clustering.dbscan.dbscan import DBSCANMetricType, DBSCANAlgorithmType
-from runner import *
+from clustering.k_means.k_means import KMeansInitType, KMeansAlgorithmType
+from clustering.spectral_clustering.spectral_clustering import EigenSolver
 from pio.input import Input
+from runner import *
 
 listbox = None
 
@@ -30,46 +25,46 @@ def main():
     window = Tk()
     window.title("Text analyzer")
     window.geometry('700x740')
-    tabControl = Notebook(window, height=440, width=700)
+    tab_control = Notebook(window, height=440, width=700)
 
-    tab1 = ttk.Frame(tabControl)
-    tab2 = ttk.Frame(tabControl)
-    tab3 = ttk.Frame(tabControl)
-    tab4 = ttk.Frame(tabControl)
-    tab5 = ttk.Frame(tabControl)
-    tab6 = ttk.Frame(tabControl)
-    tab7 = ttk.Frame(tabControl)
-    tab8 = ttk.Frame(tabControl)
-    tab9 = ttk.Frame(tabControl)
-    tab10 = ttk.Frame(tabControl)
+    tab1 = ttk.Frame(tab_control)
+    tab2 = ttk.Frame(tab_control)
+    tab3 = ttk.Frame(tab_control)
+    tab4 = ttk.Frame(tab_control)
+    tab5 = ttk.Frame(tab_control)
+    tab6 = ttk.Frame(tab_control)
+    tab7 = ttk.Frame(tab_control)
+    tab8 = ttk.Frame(tab_control)
+    tab9 = ttk.Frame(tab_control)
+    tab10 = ttk.Frame(tab_control)
 
-    log_tab = ttk.Frame(tabControl)
+    log_tab = ttk.Frame(tab_control)
 
-    tabControl.add(tab1, text='KNN')
-    tabControl.add(tab2, text='Naive Bayes')
-    tabControl.add(tab3, text='Decision Tree')
-    tabControl.add(tab4, text='Random forest')
-    tabControl.add(tab5, text='DB SCAN')
-    tabControl.add(tab6, text='Birch')
-    tabControl.add(tab7, text='Aglomerative')
-    tabControl.add(tab8, text='Spectral clustering')
-    tabControl.add(tab9, text='K Means')
-    tabControl.add(tab10, text='Mean Shift')
+    tab_control.add(tab1, text='KNN')
+    tab_control.add(tab2, text='Naive Bayes')
+    tab_control.add(tab3, text='Decision Tree')
+    tab_control.add(tab4, text='Random forest')
+    tab_control.add(tab5, text='DB SCAN')
+    tab_control.add(tab6, text='Birch')
+    tab_control.add(tab7, text='Agglomerative')
+    tab_control.add(tab8, text='Spectral clustering')
+    tab_control.add(tab9, text='K Means')
+    tab_control.add(tab10, text='Mean Shift')
 
-    tabControl.add(log_tab, text='Log')
-    tabControl.place(x=0, y=300)
+    tab_control.add(log_tab, text='Log')
+    tab_control.place(x=0, y=300)
 
-    knnTab(tab1)
-    naive_bayesTab(tab2)
-    decision_treeTab(tab3)
-    random_forestTab(tab4)
+    knn_tab(tab1)
+    naive_bayes_tab(tab2)
+    decision_tree_tab(tab3)
+    random_forest_tab(tab4)
 
     db_scan_tab(tab5)
     birch_tab(tab6)
-    aglomerativeTab(tab7)
-    spectralClusteringTab(tab8)
+    agglomerative_tab(tab7)
+    spectral_clustering_tab(tab8)
     k_means_tab(tab9)
-    mean_shitTab(tab10)
+    mean_shift_tab(tab10)
     fill_log_tab(log_tab)
 
     label = Label(window, text="Ресурсы")
@@ -107,22 +102,21 @@ def main():
                 response = urllib.request.urlopen(conn)
                 if response.status == 200:
                     messagebox.showinfo(
-                        title='Проверка подклчения', message='URL существует')
+                        title='Проверка подключения', message='URL существует')
                 else:
                     messagebox.showerror(
-                        title='Проверка подклчения', message='URL не существует')
+                        title='Проверка подключения', message='URL не существует')
             except ValueError:
                 messagebox.showerror(
-                    title='Проверка подклчения', message='URL не существует')
+                    title='Проверка подключения', message='URL не существует')
             except Exception:
                 messagebox.showerror(
-                    title='Проверка подклчения', message='URL не существует')
+                    title='Проверка подключения', message='URL не существует')
 
         Button(new_window, text="Проверить", command=_check).pack()
         Button(new_window, text="Добавить", command=_exit).pack()
 
-    Button(window, text="Добавить URL",
-           command=_show_url_input).place(x=370, y=90)
+    Button(window, text="Добавить URL", command=_show_url_input).place(x=370, y=90)
 
     window.mainloop()
 
@@ -149,8 +143,7 @@ def birch_tab(frame):
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_birch(int(nsamples.get()), float(threshold.get()),
-                  int(branching_factor.get()), int(n_clusters.get()))
+        run_birch(int(nsamples.get()), float(threshold.get()), int(branching_factor.get()), int(n_clusters.get()))
 
     def _start_with_file():
         try:
@@ -159,7 +152,11 @@ def birch_tab(frame):
                 dataframe = pandas.read_csv(path)
 
                 def _start(df):
-                    return lambda: Birch(threshold=float(threshold.get()), branching_factor=int(branching_factor.get()), n_clusters=int(n_clusters.get())).run(df)
+                    return lambda: Birch(
+                        threshold=float(threshold.get()),
+                        branching_factor=int(branching_factor.get()),
+                        n_clusters=int(n_clusters.get())
+                    ).run(df)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -177,9 +174,8 @@ def birch_tab(frame):
     Button(frame, text="Запустить на файле",
            command=_start_with_file).place(x=200, y=340)
 
+
 # TODO: И так для каждого алгоритма
-
-
 def db_scan_tab(frame):
     eps = add_input(10, 30, frame, "Eps", 0.5)
     metric = add_input(10, 80, frame, "Metric", DBSCANMetricType)
@@ -208,10 +204,10 @@ def db_scan_tab(frame):
                     power = None
 
                 def _start(df):
-                    return lambda: DBSCAN(eps=float(eps.get()), metric=metric.get(),
-                                          algorithm=algorithm.get(),
-                                          leaf_size=int(leaf_size.get()),
-                                          p=power).run(df)
+                    return lambda: DBSCAN(
+                        eps=float(eps.get()), metric=metric.get(), algorithm=algorithm.get(),
+                        leaf_size=int(leaf_size.get()), p=power
+                    ).run(df)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -230,7 +226,7 @@ def db_scan_tab(frame):
            command=_start_with_file).place(x=200, y=340)
 
 
-def aglomerativeTab(frame):
+def agglomerative_tab(frame):
     linkage = add_input(10, 30, frame, "linkage", LinkageType)
     n_clusters = add_input(10, 80, frame, 'n_clusters', 2)
     affinity = add_input(10, 130, frame, "affinity", AffinityType)
@@ -250,10 +246,11 @@ def aglomerativeTab(frame):
                 dataframe = pandas.read_csv(path)
 
                 def _start(df):
-                    return lambda: Aglomerative(n_clusters=int(n_clusters.get()),
-                                                linkage=linkage.get(),
-                                                affinity=affinity.get() if linkage.get() != 'ward' else AffinityType.euclidean.value
-                                                ).run(df)
+                    return lambda: AgglomerativeClustering(
+                        n_clusters=int(n_clusters.get()),
+                        linkage=linkage.get(),
+                        affinity=affinity.get() if linkage.get() != 'ward' else AffinityType.euclidean.value
+                    ).run(df)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -272,14 +269,13 @@ def aglomerativeTab(frame):
            command=_start_with_file).place(x=200, y=340)
 
 
-def spectralClusteringTab(frame):
+def spectral_clustering_tab(frame):
     n_clusters = add_input(10, 30, frame, 'n_clusters', 2)
     eigen_solver = add_input(10, 80, frame, "eigen_solver", EigenSolver)
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_spectral_clustering(int(nsamples.get()), None, int(
-            n_clusters.get()), eigen_solver.get())
+        run_spectral_clustering(int(nsamples.get()), None, int(n_clusters.get()), eigen_solver.get())
 
     def _start_with_file():
         try:
@@ -314,12 +310,11 @@ def k_means_tab(frame):
     algorithm = add_input(10, 140, frame, "algorithm", KMeansAlgorithmType)
     n_init = add_input(10, 180, frame, "n_init", 10)
     max_iter = add_input(10, 220, frame, "max_iter", 300)
-
     nsamples = add_input(10, 290, frame, "Nsamples", 10000)
 
     def _start_with_nsamples():
-        run_kmeans(int(nsamples.get()), None, int(n_clusters.get()), init.get(
-        ), algorithm.get(), int(n_init.get()), int(max_iter.get()))
+        run_kmeans(int(nsamples.get()), None, int(n_clusters.get()), init.get(), algorithm.get(), int(n_init.get()),
+                   int(max_iter.get()))
 
     def _start_with_file():
         try:
@@ -345,11 +340,10 @@ def k_means_tab(frame):
            command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле",
            command=_start_with_file).place(x=200, y=340)
-    pass
 
 
-def knnTab(frame):
-    n_neighbords = add_input(10, 30, frame, 'n_neighbords', 5)
+def knn_tab(frame):
+    n_neighbors = add_input(10, 30, frame, 'n_neighbors', 5)
     algorithm = add_input(10, 70, frame, 'algorithm', KNNAlgorithmType)
     weight = add_input(10, 120, frame, 'weight', KNNWeightType)
     test_size = StringVar()
@@ -365,7 +359,7 @@ def knnTab(frame):
           label='test_size').place(x=10, y=170)
 
     def _start_with_nsamples():
-        run_kneares_neighbors(n_neighbords=int(n_neighbords.get()),
+        run_kneares_neighbors(n_neighbords=int(n_neighbors.get()),
                               algorithm=algorithm.get(),
                               weight=weight.get(),
                               test_size=float(test_size.get()))
@@ -381,10 +375,11 @@ def knnTab(frame):
                     x = df.drop(columns=['target'])
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, test_size=test_size, random_state=1)
-                    return lambda: KNN(n_neighbors=n_neighbords.get(),
-                                       algorithm=algorithm.get(), weights=weight.get()).run(train_x=x_train,
-                                                                                            y_train=y_train,
-                                                                                            x_test=x_test)
+                    return lambda: KNN(
+                        n_neighbors=n_neighbors.get(),
+                        algorithm=algorithm.get(),
+                        weights=weight.get()
+                    ).run(train_x=x_train, train_y=y_train, test_x=x_test)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -403,7 +398,7 @@ def knnTab(frame):
            command=_start_with_file).place(x=200, y=340)
 
 
-def naive_bayesTab(frame):
+def naive_bayes_tab(frame):
     test_size = StringVar()
     Scale(frame, from_=0.1,
           to=0.9,
@@ -430,7 +425,9 @@ def naive_bayesTab(frame):
                     x = df.drop(columns=['target'])
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, test_size=test_size, random_state=1)
-                    return lambda: NaiveBayes(var_smoothing=float(var_smoothing.get())).run(x_train=x_train, y_train=y_train, x_test=x_test)
+                    return lambda: NaiveBayes(
+                        var_smoothing=float(var_smoothing.get())
+                    ).run(x_train=x_train, y_train=y_train, x_test=x_test)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -449,19 +446,14 @@ def naive_bayesTab(frame):
            command=_start_with_file).place(x=200, y=340)
 
 
-def decision_treeTab(frame):
+def decision_tree_tab(frame):
     criterion = add_input(10, 30, frame, 'Criterion', DecisionTreeCriterion)
     splitter = add_input(10, 80, frame, "Splitter", DecisionTreeSplitter)
     test_size = StringVar()
-    Scale(frame, from_=0.1,
-          to=0.9,
-          length=90,
-          showvalue=1,
-          variable=test_size,
-          digits=2,
-          resolution=0.05,
-          orient="horizontal",
-          label='test_size').place(x=10, y=130)
+    Scale(
+        frame, from_=0.1, to=0.9, length=90, showvalue=1, variable=test_size, digits=2,
+        resolution=0.05, orient="horizontal", label='test_size'
+    ).place(x=10, y=130)
 
     def _start_with_nsamples():
         run_decision_tree(splitter=splitter.get(
@@ -478,8 +470,9 @@ def decision_treeTab(frame):
                     x = df.drop(columns=['target'])
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, test_size=test_size, random_state=1)
-                    return lambda: DecisionTree(criterion=criterion,
-                                                splitter=splitter).run(x_train=x_train, y_train=y_train, x_test=x_test)
+                    return lambda: DecisionTree(
+                        criterion=criterion, splitter=splitter
+                    ).run(train_x=x_train, train_y=y_train, test_x=x_test)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -496,10 +489,9 @@ def decision_treeTab(frame):
            command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле",
            command=_start_with_file).place(x=200, y=340)
-    pass
 
 
-def random_forestTab(frame):
+def random_forest_tab(frame):
     n_estimators = add_input(10, 30, frame, "n_estimators", 100)
     criterion = add_input(10, 80, frame, "criterion", RandomForestCriterion)
     verbose = add_input(10, 130, frame, 'verbose', 0)
@@ -534,12 +526,12 @@ def random_forestTab(frame):
                     x = df.drop(columns=['target'])
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, test_size=test_size, random_state=1)
-                    return lambda: RandomForest(n_estimators=int(n_estimators.get()),
-                                                criterion=criterion.get(),
-                                                verbose=int(verbose.get()),
-                                                random_state=int(random_state.get())).run(train_x=x_train,
-                                                                                          y_train=y_train,
-                                                                                          x_test=x_test)
+                    return lambda: RandomForest(
+                        n_estimators=int(n_estimators.get()),
+                        criterion=criterion.get(),
+                        verbose=int(verbose.get()),
+                        random_state=int(random_state.get())
+                    ).run(x_train=x_train, y_train=y_train, x_test=x_test)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -556,10 +548,9 @@ def random_forestTab(frame):
            command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле",
            command=_start_with_file).place(x=200, y=340)
-    pass
 
 
-def mean_shitTab(frame):
+def mean_shift_tab(frame):
     max_iter = add_input(10, 30, frame, "max_iter", 300)
     bin_seeding = BooleanVar()
     cluster_all = BooleanVar()
@@ -581,8 +572,9 @@ def mean_shitTab(frame):
                 dataframe = pandas.read_csv(path)
 
                 def _start(df):
-                    return lambda: MeanShift(max_iter=int(max_iter.get()),
-                                             bin_seeding=bin_seeding.get(), cluster_all=cluster_all.get()).run(df)
+                    return lambda: MeanShift(
+                        max_iter=int(max_iter.get()), bin_seeding=bin_seeding.get(), cluster_all=cluster_all.get()
+                    ).run(df)
 
                 run_algorithm(frame, dataframe.copy(), _start)
             else:
@@ -599,7 +591,6 @@ def mean_shitTab(frame):
            command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле",
            command=_start_with_file).place(x=200, y=340)
-    pass
 
 
 def run_algorithm(frame, dataframe, algorithm):

@@ -12,7 +12,7 @@ import pylab
 from classification.decision_tree.decision_tree import DecisionTree
 from classification.knn.k_nearest_neighbors import KNN
 from classification.naive_bayes.naive_bayes import NaiveBayes
-from clustering.agglomerative.agglomerative import Aglomerative
+from clustering.agglomerative_clustering.agglomerative_clustering import AgglomerativeClustering
 from clustering.birch.birch import Birch
 from clustering.dbscan.dbscan import DBSCAN
 from clustering.fcm.fcm_impl import FCMImpl, Point
@@ -227,10 +227,10 @@ def run_agglomerative(nsamples, dataframe, linkage, n_clusters, affinity):
         X, targets = make_blobs(
             n_samples=nsamples, centers=centers, cluster_std=1, random_state=0)
         X = StandardScaler().fit_transform(X)
-        predict = Aglomerative(
+        predict = AgglomerativeClustering(
             linkage=linkage, n_clusters=n_clusters, affinity=affinity).run(X)
     else:
-        predict = Aglomerative(
+        predict = AgglomerativeClustering(
             linkage=linkage, n_clusters=n_clusters, affinity=affinity).run(dataframe)
     print(predict)
 

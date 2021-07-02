@@ -6,7 +6,7 @@ from pandas import DataFrame
 from sklearn import datasets
 from sklearn.datasets import make_blobs
 
-from clustering.agglomerative.agglomerative import Aglomerative
+from clustering.agglomerative_clustering.agglomerative_clustering import AgglomerativeClustering
 
 class AglomerativeClusterTest(unittest.TestCase):
 
@@ -19,7 +19,7 @@ class AglomerativeClusterTest(unittest.TestCase):
         # Generate data
         X, targets = make_blobs(n_samples=num_samples_total, centers=cluster_centers, n_features=num_classes,
                                 center_box=(0, 1), cluster_std=2)
-        predict = Aglomerative(n_clusters=num_classes).run(X)
+        predict = AgglomerativeClustering(n_clusters=num_classes).run(X)
 
         # Generate scatter plot for training data
         colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426', predict))
@@ -38,7 +38,7 @@ class AglomerativeClusterTest(unittest.TestCase):
         # Generate data
         X = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
 
-        predict = Aglomerative(n_clusters=2).run(X)
+        predict = AgglomerativeClustering(n_clusters=2).run(X)
         predict_list = list(predict)
 
         # Asserts:
@@ -55,7 +55,7 @@ class AglomerativeClusterTest(unittest.TestCase):
         iris_frame = DataFrame(iris.data)
         iris_frame.columns = iris.feature_names
         iris_frame['target'] = iris.target
-        result = Aglomerative(n_clusters=3).run(iris_frame)
+        result = AgglomerativeClustering(n_clusters=3).run(iris_frame)
         target_list = list(iris_frame['target'])
 
         # Asserts:
