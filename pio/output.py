@@ -73,7 +73,7 @@ class Output:
 
         Output._format_sheet(ws_source_data)
 
-        ws_result = workbook.create_sheet('Результат кластеризации')
+        ws_result = workbook.create_sheet('Результат')
 
         for c_idx, (key, values) in enumerate(clusters_dict.items(), 1):
             cell = ws_result.cell(row=1, column=c_idx, value=key)
