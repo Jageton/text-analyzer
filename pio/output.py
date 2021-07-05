@@ -56,10 +56,10 @@ class Output:
     def write_to_xlsx_file(file_path, data_frame, clusters_dict, params):
         """
         Записывает данные в excel файл
-        :param params: список параметров алгоритма
         :param file_path: путь файла для записи
         :param data_frame: исходные данные
         :param clusters_dict: распределение по кластерам
+        :param params: список параметров алгоритма
         """
 
         workbook = openpyxl.Workbook()

@@ -5,6 +5,8 @@ from tkinter import *
 from tkinter import ttk, filedialog, messagebox
 from tkinter.ttk import Notebook
 
+import sys
+
 import pandas
 
 from buffer import Buffer
@@ -16,6 +18,7 @@ from clustering.dbscan.dbscan import DBSCANMetricType, DBSCANAlgorithmType
 from clustering.k_means.k_means import KMeansInitType, KMeansAlgorithmType
 from clustering.spectral_clustering.spectral_clustering import EigenSolver
 from pio.input import Input
+from pio.output import Output
 from runner import *
 from util.visualization import data_3d_visualization
 
@@ -147,12 +150,13 @@ def birch_tab(frame):
         run_birch(int(nsamples.get()), float(threshold.get()), int(branching_factor.get()), int(n_clusters.get()))
 
     def _start_with_file():
-        def _start(df):
-            return lambda: Birch(
+        def _start():
+            alg = Birch(
                 threshold=float(threshold.get()),
                 branching_factor=int(branching_factor.get()),
                 n_clusters=int(n_clusters.get())
-            ).run(df)
+            )
+            return lambda df: (get_attributes(alg), alg.run(df))
 
         dataframe = read_active_file()
         if dataframe is not None:
@@ -178,11 +182,12 @@ def db_scan_tab(frame):
                     p=power)
 
     def _start_with_file():
-        def _start(df):
-            return lambda: DBSCAN(
+        def _start():
+            alg = DBSCAN(
                 eps=float(eps.get()), metric=metric.get(), algorithm=algorithm.get(),
                 leaf_size=int(leaf_size.get()), p=power
-            ).run(df)
+            )
+            return lambda df: (get_attributes(alg), alg.run(df))
 
         power = p.get() != "2" if None else 2
         dataframe = read_active_file()
@@ -206,12 +211,13 @@ def agglomerative_tab(frame):
                           n_clusters=int(n_clusters.get()))
 
     def _start_with_file():
-        def _start(df):
-            return lambda: AgglomerativeClustering(
+        def _start():
+            alg = AgglomerativeClustering(
                 n_clusters=int(n_clusters.get()),
                 linkage=linkage.get(),
                 affinity=affinity.get() if linkage.get() != 'ward' else AffinityType.euclidean.value
-            ).run(df)
+            )
+            return lambda df: (get_attributes(alg), alg.run(df))
 
         dataframe = read_active_file()
         if dataframe is not None:
@@ -230,9 +236,10 @@ def spectral_clustering_tab(frame):
         run_spectral_clustering(int(nsamples.get()), int(n_clusters.get()), eigen_solver.get())
 
     def _start_with_file():
-        def _start(df):
-            return lambda: SpectralCluster(n_clusters=int(n_clusters.get()),
-                                           eigen_solver=eigen_solver.get()).run(df)
+        def _start():
+            alg = SpectralCluster(n_clusters=int(n_clusters.get()),
+                                           eigen_solver=eigen_solver.get())
+            return lambda df: (get_attributes(alg), alg.run(df))
 
         dataframe = read_active_file()
         if dataframe is not None:
@@ -255,11 +262,12 @@ def k_means_tab(frame):
                    algorithm.get(), int(n_init.get()), int(max_iter.get()))
 
     def _start_with_file():
-        def _start(df):
-            return lambda: KMeans(
+        def _start():
+            alg = KMeans(
                 n_clusters=int(n_clusters.get()), init=init.get(), algorithm=algorithm.get(),
                 n_init=int(n_init.get()), max_iter=int(max_iter.get())
-            ).run(df)
+            )
+            return lambda df: (get_attributes(alg), alg.run(df))
 
         dataframe = read_active_file()
         if dataframe is not None:
@@ -419,10 +427,11 @@ def mean_shift_tab(frame):
                        cluster_all=cluster_all.get(), nsamples=int(nsamples.get()))
 
     def _start_with_file():
-        def _start(df):
-            return lambda: MeanShift(
+        def _start():
+            alg = MeanShift(
                 max_iter=int(max_iter.get()), bin_seeding=bin_seeding.get(), cluster_all=cluster_all.get()
-            ).run(df)
+            )
+            return lambda df: (get_attributes(alg), alg.run(df))
 
         dataframe = read_active_file()
         if dataframe is not None:
@@ -466,14 +475,25 @@ def run_algorithm(frame, dataframe, algorithm):
             if combo_box1.get() != name and combo_box2.get() != name and combo_box3.get() != name:
                 del df[name]
 
-        alg = algorithm(dataframe)
-        predict = alg()
+        alg = algorithm()
+        (params, predict) = alg(df)
         if len(df.columns) == 2:
             data_2d_visualization(dataframe, predict)
         else:
             data_3d_visualization(dataframe, predict)
 
+        is_yes = messagebox.askyesno(message="Сохранить результат в Excel?")
+        if is_yes:
+            save_to_excel(dataframe, predict, params)
+
     Button(new_window, text='Запустить', command=_start).grid(column=1, row=2)
+
+
+def save_to_excel(data_frame, predict, params):
+    file = filedialog.asksaveasfile(initialdir=getcwd())
+    file_name = file.name
+    file.close()
+    save_clusterization_result_to_excel(file_name, data_frame, predict, params)
 
 
 def add_input(x, y, frame, text, value):
@@ -499,6 +519,8 @@ def read_file():
         if path.endswith('csv'):
             return Input.internet_read_csv(path)
         return Input.internet_read_text_file(path)
+    elif path.endswith('xls') or path.endswith('xlsx'):
+        return pandas.read_excel(path)
     else:
         if path.endswith('csv'):
             return Input.local_read_csv(path)
@@ -509,6 +531,12 @@ def read_active_file():
     try:
         path = listbox.get(ACTIVE)
         if path != "":
+            if path.endswith('xls') or path.endswith('xlsx'):
+                excel = pandas.read_excel(path)
+                if type(excel) is DataFrame:
+                    return excel
+                else:
+                    return excel[0]
             return pandas.read_csv(path)
         else:
             messagebox.showerror(message='Не был выбран файл или URL')
@@ -520,6 +548,24 @@ def read_active_file():
         messagebox.showerror(
             message="Произошла ошибочка. Посмотрите в лог.")
     return None
+
+
+def save_clusterization_result_to_excel(path_to_save, data_frame, prediction, params):
+    data_frame_rows = data_frame.values
+    rows = [data_frame_rows[i] for i in range(len(data_frame_rows))]
+    dictionary = {}
+    for i in range(max(prediction) + 1):
+        indexes = [j for j, x in enumerate(prediction) if x == i]
+        points = {i + 1: rows[i] for i in indexes}
+        dictionary['Кластер %d:' % (i + 1)] = points
+
+    Output.write_to_xlsx_file(path_to_save, data_frame, dictionary, params)
+
+
+def get_attributes(alg):
+    attributes = dict((k, v) for (k, v) in alg.__dict__.items() if not str(k).startswith('__') and v is not None)
+    attributes['alg_name'] = alg.__class__.__name__
+    return attributes
 
 
 def fill_log_tab(log_tab):
