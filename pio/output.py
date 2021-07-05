@@ -1,5 +1,5 @@
 import openpyxl
-from openpyxl.styles import Alignment
+from openpyxl.styles import Alignment, Font
 from openpyxl.utils.dataframe import dataframe_to_rows
 
 
@@ -53,9 +53,10 @@ class Output:
             print('Неизвестная ошибка!')
 
     @staticmethod
-    def write_to_xlsx_file(file_path, data_frame, clusters_dict):
+    def write_to_xlsx_file(file_path, data_frame, clusters_dict, params):
         """
-        Записывает массив в файл
+        Записывает данные в excel файл
+        :param params: список параметров алгоритма
         :param file_path: путь файла для записи
         :param data_frame: исходные данные
         :param clusters_dict: распределение по кластерам
@@ -69,18 +70,40 @@ class Output:
         for r_idx, row in enumerate(rows, 1):
             for c_idx, value in enumerate(row, 1):
                 cell = ws_source_data.cell(row=r_idx, column=c_idx, value=value)
-                cell.alignment = Alignment(horizontal='center')
+                cell.alignment = Alignment(horizontal='center', vertical='center')
 
         Output._format_sheet(ws_source_data)
 
         ws_result = workbook.create_sheet('Результат')
 
+        gl_row_idx = 1
+        if 'alg_name' in params:
+            cell = ws_result.cell(row=gl_row_idx, column=1, value='Алгоритм - {:s}'.format(params.pop('alg_name')))
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.font = Font(bold=True)
+            ws_result.merge_cells('A{:d}:B{:d}'.format(gl_row_idx, gl_row_idx))
+            gl_row_idx += 2
+
+        cell = ws_result.cell(row=gl_row_idx, column=1, value='Параметры алгоритма')
+        ws_result.merge_cells('A{:d}:B{:d}'.format(gl_row_idx, gl_row_idx))
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.font = Font(bold=True)
+        for r_idx, (key, value) in enumerate(params.items(), 1):
+            gl_row_idx += 1
+            cell = ws_result.cell(row=gl_row_idx, column=1, value=key)
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell = ws_result.cell(row=gl_row_idx, column=2, value=value)
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+
+        gl_row_idx += 2
         for c_idx, (key, values) in enumerate(clusters_dict.items(), 1):
-            cell = ws_result.cell(row=1, column=c_idx, value=key)
-            cell.alignment = Alignment(horizontal='center')
-            for r_idx, value in enumerate(values, 1):
-                cell = ws_result.cell(row=r_idx + 1, column=c_idx, value=Output._points_to_str(value))
-                cell.alignment = Alignment(horizontal='center')
+            cell = ws_result.cell(row=gl_row_idx, column=c_idx, value=key)
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.font = Font(bold=True)
+            for r_idx, (k, v) in enumerate(values.items(), 1):
+                cell = ws_result.cell(row=r_idx + gl_row_idx, column=c_idx,
+                                      value='{:s}: {:s}'.format(str(k), Output._points_to_str(v)))
+                cell.alignment = Alignment(horizontal='center', vertical='center')
 
         Output._format_sheet(ws_result)
 
@@ -95,4 +118,6 @@ class Output:
     def _format_sheet(worksheet):
         for column_cells in worksheet.columns:
             length = max(len(str(cell.value or "")) for cell in column_cells) + 2
-            worksheet.column_dimensions[column_cells[0].column_letter].width = length
+            cell = column_cells[0]
+            letter = cell.column_letter if hasattr(cell, 'column_letter') else cell.coordinate[0:1]
+            worksheet.column_dimensions[letter].width = length
