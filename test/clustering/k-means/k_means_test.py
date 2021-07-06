@@ -4,8 +4,10 @@ import numpy as np
 from pandas.core.frame import DataFrame
 from sklearn import datasets
 from sklearn.datasets import make_blobs
+import pandas
 
 from clustering.k_means.k_means import KMeans
+from util.research import show_all_projection
 from util.visualization import data_2d_visualization
 
 
@@ -73,6 +75,12 @@ class KMeansTest(unittest.TestCase):
               first_target_cluster_cnt, second_target_cluster_cnt, third_target_cluster_cnt)
         print('Распределение точек по кластерам после кластеризации: ',
               first_cluster_cnt, second_cluster_cnt, third_cluster_cnt)
+
+    def test_praktika(self):
+        data_frame = pandas.read_csv('./../../../pio/data/praktika_genotype.csv')
+        result = KMeans(n_clusters=2).run(data_frame)
+        data_frame = pandas.read_csv('./../../../pio/data/praktika_genotype.csv')
+        show_all_projection(data_frame, result, 'Genotype')
 
 
 if __name__ == '__main__':

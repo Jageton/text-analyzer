@@ -24,6 +24,15 @@ def _dataframe_2d_visualization(dataframe, predict):
     plt.show()
 
 
+def dataframe_2d_vis(dataframe, col1_idx, col2_idx, predict):
+    plt.scatter(dataframe.values[:, col1_idx], dataframe.values[:, col2_idx], c=get_colors(predict),
+                marker="o", linewidths=0.5, edgecolors='#000000', picker=True)
+    plt.title('Clusterization result')
+    plt.xlabel(dataframe.columns[col1_idx])
+    plt.ylabel(dataframe.columns[col2_idx])
+    plt.show()
+
+
 def _dataframe_3d_visualization(dataframe, predict):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
