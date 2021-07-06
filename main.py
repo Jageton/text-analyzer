@@ -238,7 +238,7 @@ def spectral_clustering_tab(frame):
     def _start_with_file():
         def _start():
             alg = SpectralCluster(n_clusters=int(n_clusters.get()),
-                                           eigen_solver=eigen_solver.get())
+                                  eigen_solver=eigen_solver.get())
             return lambda df: (get_attributes(alg), alg.run(df))
 
         dataframe = read_active_file()
@@ -284,7 +284,7 @@ def knn_tab(frame):
     test_size = StringVar()
 
     Scale(
-        frame, from_=0.1, to=0.9, length=90, showvalue=1, variable=test_size,
+        frame, from_=0.1, to=0.9, length=90, showvalue=1, variable=test_size.get(),
         digits=2, resolution=0.05, orient="horizontal", label='test_size'
     ).place(x=10, y=170)
 
@@ -295,20 +295,24 @@ def knn_tab(frame):
                                test_size=float(test_size.get()))
 
     def _start_with_file():
+        def _s():
+            return lambda df: _start()
+
         def _start(df):
             y = df['target'].values
             x = df.drop(columns=['target'])
             x_train, x_test, y_train, y_test = train_test_split(
-                x, y, test_size=test_size, random_state=1)
-            return lambda: KNN(
+                x, y, test_size=float(test_size.get()), random_state=1)
+            alg = KNN(
                 n_neighbors=n_neighbors.get(),
                 algorithm=algorithm.get(),
                 weights=weight.get()
-            ).run(train_x=x_train, train_y=y_train, test_x=x_test)
+            )
+            return get_attributes(alg), alg.run(train_x=x_train, train_y=y_train, test_x=x_test)
 
         dataframe = read_active_file()
         if dataframe is not None:
-            run_algorithm(frame, dataframe.copy(), _start)
+            run_algorithm(frame, dataframe.copy(), _s, clusterization=False)
 
     Button(frame, text="Запустить с nsamples", command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле", command=_start_with_file).place(x=200, y=340)
@@ -326,18 +330,22 @@ def naive_bayes_tab(frame):
         run_naive_bayes(test_size=float(test_size.get()))
 
     def _start_with_file():
+        def _s():
+            return lambda df: _start(df)
+
         def _start(df):
             y = df['target'].values
             x = df.drop(columns=['target'])
             x_train, x_test, y_train, y_test = train_test_split(
-                x, y, test_size=test_size, random_state=1)
-            return lambda: NaiveBayes(
+                x, y, test_size=float(test_size.get()), random_state=1)
+            alg = NaiveBayes(
                 var_smoothing=float(var_smoothing.get())
-            ).run(x_train=x_train, y_train=y_train, x_test=x_test)
+            )
+            return get_attributes(alg), alg.run(x_train=x_train, y_train=y_train, x_test=x_test)
 
         dataframe = read_active_file()
         if dataframe is not None:
-            run_algorithm(frame, dataframe.copy(), _start)
+            run_algorithm(frame, dataframe.copy(), _s, clusterization=False)
 
     Button(frame, text="Запустить с nsamples", command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле", command=_start_with_file).place(x=200, y=340)
@@ -356,18 +364,22 @@ def decision_tree_tab(frame):
         run_decision_tree(splitter=splitter.get(), criterion=criterion.get(), test_size=float(test_size.get()))
 
     def _start_with_file():
+        def _s():
+            return lambda df: _start(df)
+
         def _start(df):
             y = df['target'].values
             x = df.drop(columns=['target'])
             x_train, x_test, y_train, y_test = train_test_split(
-                x, y, test_size=test_size, random_state=1)
-            return lambda: DecisionTree(
-                criterion=criterion, splitter=splitter
-            ).run(train_x=x_train, train_y=y_train, test_x=x_test)
+                x, y, test_size=float(test_size.get()), random_state=1)
+            alg = DecisionTree(
+                criterion=criterion.get(), splitter=splitter.get()
+            )
+            return get_attributes(alg), alg.run(train_x=x_train, train_y=y_train, test_x=x_test)
 
         dataframe = read_active_file()
         if dataframe is not None:
-            run_algorithm(frame, dataframe.copy(), _start)
+            run_algorithm(frame, dataframe.copy(), _s, clusterization=False)
 
     Button(frame, text="Запустить с nsamples", command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле", command=_start_with_file).place(x=200, y=340)
@@ -393,21 +405,25 @@ def random_forest_tab(frame):
                           test_size=float(test_size.get()))
 
     def _start_with_file():
+        def _s():
+            return lambda df: _start(df)
+
         def _start(df):
             y = df['target'].values
             x = df.drop(columns=['target'])
             x_train, x_test, y_train, y_test = train_test_split(
                 x, y, test_size=test_size, random_state=1)
-            return lambda: RandomForest(
+            alg = RandomForest(
                 n_estimators=int(n_estimators.get()),
                 criterion=criterion.get(),
                 verbose=int(verbose.get()),
                 random_state=int(random_state.get())
-            ).run(x_train=x_train, y_train=y_train, x_test=x_test)
+            )
+            return get_attributes(alg), alg.run(x_train=x_train, y_train=y_train, x_test=x_test)
 
         dataframe = read_active_file()
         if dataframe is not None:
-            run_algorithm(frame, dataframe.copy(), _start)
+            run_algorithm(frame, dataframe.copy(), _s, clusterization=False)
 
     Button(frame, text="Запустить с nsamples", command=_start_with_nsamples).place(x=10, y=340)
     Button(frame, text="Запустить на файле", command=_start_with_file).place(x=200, y=340)
@@ -441,7 +457,7 @@ def mean_shift_tab(frame):
     Button(frame, text="Запустить на файле", command=_start_with_file).place(x=200, y=340)
 
 
-def run_algorithm(frame, dataframe, algorithm):
+def run_algorithm(frame, dataframe, algorithm, clusterization=True):
     new_window = Toplevel(frame)
     new_window.columnconfigure(0, pad=10)
     new_window.columnconfigure(1, pad=10)
@@ -476,24 +492,28 @@ def run_algorithm(frame, dataframe, algorithm):
                 del df[name]
 
         alg = algorithm()
-        (params, predict) = alg(df)
-        if len(df.columns) == 2:
-            data_2d_visualization(dataframe, predict)
-        else:
-            data_3d_visualization(dataframe, predict)
+        (params, predict) = alg(dataframe)
+        if clusterization:
+            if len(df.columns) == 2:
+                data_2d_visualization(df, predict)
+            else:
+                data_3d_visualization(df, predict)
 
         is_yes = messagebox.askyesno(message="Сохранить результат в Excel?")
         if is_yes:
-            save_to_excel(dataframe, predict, params)
+            save_to_excel(dataframe, predict, params, clusterization)
 
     Button(new_window, text='Запустить', command=_start).grid(column=1, row=2)
 
 
-def save_to_excel(data_frame, predict, params):
+def save_to_excel(data_frame, predict, params, clusterization):
     file = filedialog.asksaveasfile(initialdir=getcwd())
     file_name = file.name
     file.close()
-    save_clusterization_result_to_excel(file_name, data_frame, predict, params)
+    if clusterization:
+        save_clusterization_result_to_excel(file_name, data_frame, predict, params)
+    else:
+        save_classification_result_to_excel(file_name, data_frame, predict, params)
 
 
 def add_input(x, y, frame, text, value):
@@ -558,6 +578,18 @@ def save_clusterization_result_to_excel(path_to_save, data_frame, prediction, pa
         indexes = [j for j, x in enumerate(prediction) if x == i]
         points = {i + 1: rows[i] for i in indexes}
         dictionary['Кластер %d:' % (i + 1)] = points
+
+    Output.write_to_xlsx_file(path_to_save, data_frame, dictionary, params)
+
+
+def save_classification_result_to_excel(path_to_save, data_frame, prediction, params):
+    iris_frame_rows = data_frame.values
+    rows = [iris_frame_rows[i] for i in range(len(iris_frame_rows))]
+    dictionary = {}
+    for i in range(max(prediction) + 1):
+        indexes = [j for j, x in enumerate(prediction) if x == i]
+        points = {i + 1: rows[i] for i in indexes}
+        dictionary['Класс %d:' % (i + 1)] = points
 
     Output.write_to_xlsx_file(path_to_save, data_frame, dictionary, params)
 
