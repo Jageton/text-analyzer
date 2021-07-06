@@ -284,7 +284,7 @@ def knn_tab(frame):
     test_size = StringVar()
 
     Scale(
-        frame, from_=0.1, to=0.9, length=90, showvalue=1, variable=test_size.get(),
+        frame, from_=0.1, to=0.9, length=90, showvalue=1, variable=test_size,
         digits=2, resolution=0.05, orient="horizontal", label='test_size'
     ).place(x=10, y=170)
 
@@ -296,7 +296,7 @@ def knn_tab(frame):
 
     def _start_with_file():
         def _s():
-            return lambda df: _start()
+            return lambda df: _start(df)
 
         def _start(df):
             y = df['target'].values
@@ -304,7 +304,7 @@ def knn_tab(frame):
             x_train, x_test, y_train, y_test = train_test_split(
                 x, y, test_size=float(test_size.get()), random_state=1)
             alg = KNN(
-                n_neighbors=n_neighbors.get(),
+                n_neighbors=int(n_neighbors.get()),
                 algorithm=algorithm.get(),
                 weights=weight.get()
             )
@@ -412,7 +412,7 @@ def random_forest_tab(frame):
             y = df['target'].values
             x = df.drop(columns=['target'])
             x_train, x_test, y_train, y_test = train_test_split(
-                x, y, test_size=test_size, random_state=1)
+                x, y, test_size=float(test_size.get()), random_state=1)
             alg = RandomForest(
                 n_estimators=int(n_estimators.get()),
                 criterion=criterion.get(),
